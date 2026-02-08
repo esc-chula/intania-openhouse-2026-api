@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 func InitServer(cfg config.Config) error {
@@ -48,6 +49,9 @@ func InitServer(cfg config.Config) error {
 
 	// Init Database
 	db := database.NewPostgresDB(cfg.Database())
+	db.AddQueryHook(bundebug.NewQueryHook(
+		bundebug.WithVerbose(!cfg.App().IsProduction),
+	))
 
 	// Create Repositories
 	userRepo := repositories.NewUserRepo(db)
