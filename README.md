@@ -87,6 +87,10 @@ Makefile                # Dev commands
 - validator: config validation
 - cors middleware: CORS handling for browser clients
 
+## Data access pattern (Executor + Transactioner)
+
+`pkg/baserepo` keeps repositories transaction-agnostic by reading `bun.IDB` from context. Usecases define transaction boundaries via `Transactioner`, and repositories execute queries via `Executor` that automatically uses the transaction if present.
+
 ## API docs
 
 Huma provides generated docs and OpenAPI spec when `APP_IS_PRODUCTION=false` (see `internal/server/server.go`). Default paths:
