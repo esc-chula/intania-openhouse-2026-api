@@ -11,28 +11,28 @@ Prerequisites
 
 Setup
 ```bash
-# 1) Configure env
+# 1) Download Go libraries
+go mod download
+
+# 2) Configure env (you can also modify it as needed)
 cp .env.example .env.dev
 
-# 2) Start dependencies (Postgres)
+# 3) Start dependencies (Postgres)
 make up-deps
 
-# 3) Setup migrations
+# 4) Setup migrations (migrate reset and migrate up)
 make setup
 
-# 4) Run API with hot-reload
+# 5) Run API with hot-reload
 make up
-```
-
-Run without Air
-```bash
-go run . --env-file .env.dev serve
 ```
 
 Migrations (goose)
 ```bash
-# up | down | reset | create
-go run . --env-file .env.dev migrate up
+make migrate-up                          # migrate up to the latest version
+make migrate-down                        # migrate down one version
+make migrate-reset                       # migrate down all versions
+make migrate-create ARGS=add_rls_support # create new migration file
 ```
 
 Docker build/run
@@ -43,13 +43,13 @@ make docker-run
 
 ## Configuration
 
-Configuration is defined in `pkg/config/config_template.yaml` and can be overridden by environment variables (viper + env replacer). Example:
+Configuration is defined in `pkg/config/config_template.yaml` and can be overridden by environment variables (in `.env.dev`). Example:
 
 ```bash
-APP_ADDRESS=0.0.0.0:8000
-APP_ALLOWED_ORIGINS=http://localhost:3000
-APP_IS_PRODUCTION=false
-DATABASE_DSN=postgres://user:password@localhost:5432/intania-openhouse-2026?sslmode=disable
+APP_ADDRESS=0.0.0.0:1234
+APP_ALLOWED_ORIGINS=https://intania-openhouse-2026.vercel.app
+APP_IS_PRODUCTION=true
+DATABASE_DSN=postgres://realuser:realpassword@realhost:5432/intania-openhouse-2026?sslmode=disable
 ```
 
 Air loads `.env.dev` automatically via `.air.toml`.
@@ -60,8 +60,8 @@ Air loads `.env.dev` automatically via `.air.toml`.
 cmd/                    # Cobra CLI commands (serve, migrate)
 internal/
   handlers/             # Huma handlers (HTTP layer)
-  middlewares/          # Middleware definitions
-  migrations/           # Goose SQL migrations (embedded)
+  middlewares/          # Middlewares
+  migrations/           # SQL migrations
   models/               # Domain models
   repositories/         # Data access layer (Bun)
   server/               # Server wiring (chi + huma)
@@ -72,7 +72,7 @@ pkg/
   database/             # Postgres connection (Bun)
 Dockerfile              # Distroless container build
 docker-compose.yaml     # Local Postgres
-Makefile                # Dev shortcuts
+Makefile                # Dev commands
 .air.toml               # Hot-reload config
 ```
 

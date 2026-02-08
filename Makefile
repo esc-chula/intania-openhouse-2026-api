@@ -5,11 +5,12 @@ ENV_FILE := .env.dev
 setup: migrate-reset migrate-up
 
 migrate-%:
-	go run . --env-file $(ENV_FILE) migrate $*
+	go run . --env-file $(ENV_FILE) migrate $* $(ARGS)
 
 migrate-up:
 migrate-down:
 migrate-reset:
+migrate-create:
 
 up:
 	air -c .air.toml
