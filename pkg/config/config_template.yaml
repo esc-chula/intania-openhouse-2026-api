@@ -1,0 +1,9 @@
+# Values can be overridden by setting environment variables when running the application.
+# Example: APP_ADDRESS=localhost:1234
+
+app:
+  address: 0.0.0.0:8000
+  allowed_origins: ["http://localhost:3000"]
+  is_production: false
+database:
+  dsn: postgres://user:password@localhost:5432/intania-openhouse-2026?sslmode=disable
