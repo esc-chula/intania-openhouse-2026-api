@@ -16,6 +16,7 @@ import (
 type Config interface {
 	App() App
 	Database() Database
+	Firebase() Firebase
 
 	String() string
 }
@@ -30,15 +31,21 @@ type Database struct {
 	DSN string `mapstructure:"dsn" validate:"required"`
 }
 
+type Firebase struct {
+	ServiceAccountKeyFile string `mapstructure:"service_account_key_file"`
+}
+
 // -------------------------------------------------------------------------- //
 
 type config struct {
 	AppCfg      App      `mapstructure:"app"`
 	DatabaseCfg Database `mapstructure:"database"`
+	FirebaseCfg Firebase `mapstructure:"firebase"`
 }
 
 func (c *config) App() App           { return c.AppCfg }
 func (c *config) Database() Database { return c.DatabaseCfg }
+func (c *config) Firebase() Firebase { return c.FirebaseCfg }
 
 func (c *config) String() string {
 	jsonBytes, err := json.MarshalIndent(c, "", "  ")

@@ -7,3 +7,5 @@ app:
   is_production: false
 database:
   dsn: postgres://user:password@localhost:5432/intania-openhouse-2026?sslmode=disable
+firebase:
+  service_account_key_file: "service-account.json"
