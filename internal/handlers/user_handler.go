@@ -104,6 +104,27 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 	}, nil
 }
 
-func (h *userHandler) GetUser(ctx context.Context, input *struct{}) (*struct{}, error) {
-	return nil, nil // Placeholder
+type GetUserResponse struct {
+	Body struct {
+		User *models.User `json:"user"`
+	}
+}
+
+func (h *userHandler) GetUser(ctx context.Context, input *struct{}) (*GetUserResponse, error) {
+	// Retrieve email from context
+	email, ok := ctx.Value("email").(string)
+	if !ok || email == "" {
+		return nil, ErrEmailNotFound
+	}
+
+	user, err := h.usecase.GetUser(ctx, email)
+	if err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	return &GetUserResponse{
+		Body: struct {
+			User *models.User `json:"user"`
+		}{User: user},
+	}, nil
 }

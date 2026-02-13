@@ -11,6 +11,7 @@ import (
 // TODO:
 type UserRepo interface {
 	CreateUser(ctx context.Context, user *models.User) error
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 }
 
 type userRepoImpl struct {
@@ -28,4 +29,15 @@ func (r *userRepoImpl) CreateUser(ctx context.Context, user *models.User) error 
 		_, err := idb.NewInsert().Model(user).Exec(ctx)
 		return err
 	})
+}
+
+func (r *userRepoImpl) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	user := new(models.User)
+	err := r.exec.Run(ctx, func(idb bun.IDB) error {
+		return idb.NewSelect().Model(user).Where("email = ?", email).Scan(ctx)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
