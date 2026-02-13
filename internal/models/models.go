@@ -37,7 +37,7 @@ type User struct {
 	Email           string          `bun:"email"               json:"email"`
 	ParticipantType ParticipantType `bun:"participant_type"    json:"participant_type"`
 
-	AttendanceDates      []string        `bun:"attendance_dates,type:date,array" json:"attendance_dates"` // Date in format `2024-12-31`
+	AttendanceDates      []string        `bun:"attendance_dates,type:date,array" json:"attendance_dates" validate:"dive,datetime=2006-01-02"` // Date in format `2024-12-31`
 	InterestedActivities []string        `bun:"interested_activities,array"      json:"interested_activities"`
 	DiscoveryChannel     []string        `bun:"discovery_channel,array"          json:"discovery_channel"`
 	ExtraAttributes      json.RawMessage `bun:"extra_attributes,type:jsonb"      json:"extra_attributes"`
