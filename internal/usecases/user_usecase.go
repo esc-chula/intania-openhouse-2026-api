@@ -10,7 +10,7 @@ import (
 // TODO:
 type UserUsecase interface {
 	CreateUser(ctx context.Context, user *models.User) error
-	GetUser(ctx context.Context, email string) (*models.User, error)
+	GetUser(ctx context.Context, email string, fields []string) (*models.User, error)
 }
 
 type userUsecaseImpl struct {
@@ -26,6 +26,6 @@ func (u *userUsecaseImpl) CreateUser(ctx context.Context, user *models.User) err
 	return u.repo.CreateUser(ctx, user)
 }
 
-func (u *userUsecaseImpl) GetUser(ctx context.Context, email string) (*models.User, error) {
-	return u.repo.GetUserByEmail(ctx, email)
+func (u *userUsecaseImpl) GetUser(ctx context.Context, email string, fields []string) (*models.User, error) {
+	return u.repo.GetUserByEmail(ctx, email, fields)
 }

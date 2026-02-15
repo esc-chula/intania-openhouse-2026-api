@@ -29,21 +29,21 @@ const (
 type User struct {
 	bun.BaseModel `bun:"table:users,alias:u"`
 
-	ID              int64           `bun:"id,pk,autoincrement" json:"id"`
-	FirstName       string          `bun:"first_name"          json:"first_name"`
-	LastName        string          `bun:"last_name"           json:"last_name"`
-	Gender          Gender          `bun:"gender"              json:"gender"`
-	PhoneNumber     string          `bun:"phone_number"        json:"phone_number"`
-	Email           string          `bun:"email"               json:"email"`
-	ParticipantType ParticipantType `bun:"participant_type"    json:"participant_type"`
+	ID              int64           `bun:"id,pk,autoincrement" json:"id,omitempty"`
+	FirstName       string          `bun:"first_name" json:"first_name,omitempty"`
+	LastName        string          `bun:"last_name" json:"last_name,omitempty"`
+	Gender          Gender          `bun:"gender" json:"gender,omitempty"`
+	PhoneNumber     string          `bun:"phone_number" json:"phone_number,omitempty"`
+	Email           string          `bun:"email" json:"email,omitempty"`
+	ParticipantType ParticipantType `bun:"participant_type" json:"participant_type,omitempty"`
 
-	AttendanceDates      []string        `bun:"attendance_dates,type:date,array" json:"attendance_dates" validate:"dive,datetime=2006-01-02"` // Date in format `2024-12-31`
-	InterestedActivities []string        `bun:"interested_activities,array"      json:"interested_activities"`
-	DiscoveryChannel     []string        `bun:"discovery_channel,array"          json:"discovery_channel"`
-	ExtraAttributes      json.RawMessage `bun:"extra_attributes,type:jsonb"      json:"extra_attributes"`
+	AttendanceDates      []string        `bun:"attendance_dates,type:date,array" json:"attendance_dates,omitempty"` // Date in format `2024-12-31`
+	InterestedActivities []string        `bun:"interested_activities,array" json:"interested_activities,omitempty"`
+	DiscoveryChannel     []string        `bun:"discovery_channel,array" json:"discovery_channel,omitempty"`
+	ExtraAttributes      json.RawMessage `bun:"extra_attributes,type:jsonb" json:"extra_attributes,omitempty"`
 
-	CreatedAt time.Time `bun:"created_at,nullzero" json:"created_at"`
-	UpdatedAt time.Time `bun:"updated_at,nullzero" json:"updated_at"`
+	CreatedAt time.Time `bun:"created_at,nullzero" json:"created_at,omitempty"`
+	UpdatedAt time.Time `bun:"updated_at,nullzero" json:"updated_at,omitempty"`
 }
 
 type StudentExtraAttributes struct {
