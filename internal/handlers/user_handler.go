@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"reflect"
+	"log"
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -35,7 +35,7 @@ func InitUserHandler(api huma.API, usecase usecases.UserUsecase) {
 		o.Description = "Register a new user with the provided details."
 	})
 
-	huma.Post(api, "/me", handler.GetUser, func(o *huma.Operation) {
+	huma.Get(api, "/me", handler.GetUser, func(o *huma.Operation) {
 		o.Summary = "Get user details"
 		o.Description = "Retrieve the user details for the current user, based on the Authorization header."
 	})
@@ -105,22 +105,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 }
 
 type GetUserRequest struct {
-	Body struct {
-		FirstName       *bool `json:"first_name,omitempty"`
-		LastName        *bool `json:"last_name,omitempty"`
-		Gender          *bool `json:"gender,omitempty"`
-		PhoneNumber     *bool `json:"phone_number,omitempty"`
-		Email           *bool `json:"email,omitempty"`
-		ParticipantType *bool `json:"participant_type,omitempty"`
-
-		AttendanceDates      *bool `json:"attendance_dates,omitempty"`
-		InterestedActivities *bool `json:"interested_activities,omitempty"`
-		DiscoveryChannel     *bool `json:"discovery_channel,omitempty"`
-		ExtraAttributes      *bool `json:"extra_attributes,omitempty"`
-
-		CreatedAt *bool `json:"created_at,omitempty"`
-		UpdatedAt *bool `json:"updated_at,omitempty"`
-	}
+	Fields string `query:"fields" explode:"true"`
 }
 
 type GetUserResponse struct {
@@ -138,25 +123,11 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 
 	fields := []string{}
 
-	v := reflect.ValueOf(input.Body)
-	t := reflect.TypeOf(input.Body)
-
-	for i := 0; i < v.NumField(); i++ {
-
-		field := v.Field(i)
-
-		if field.IsNil() {
-			continue
-		}
-
-		// dereference pointer
-		if field.Elem().Bool() {
-			jsonTag := t.Field(i).Tag.Get("json")
-			column := strings.Split(jsonTag, ",")[0] // to remove omitempty
-			fields = append(fields, column)
-		}
+	if input.Fields != "" {
+		fields = strings.Split(input.Fields, ",")
 	}
 
+	log.Println(fields)
 	// default
 	if len(fields) == 0 {
 		fields = []string{"email"}
