@@ -70,8 +70,7 @@ func InitServer(cfg config.Config) error {
 
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
-	userGroup.UseMiddleware(mid.WithAuthContext)
-	handlers.InitUserHandler(userGroup, userUsecase)
+	handlers.InitUserHandler(userGroup, userUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)
