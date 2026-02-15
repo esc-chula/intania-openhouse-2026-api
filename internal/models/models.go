@@ -30,17 +30,17 @@ type User struct {
 	bun.BaseModel `bun:"table:users,alias:u"`
 
 	ID              int64           `bun:"id,pk,autoincrement" json:"id"`
-	FirstName       string          `bun:"first_name"          json:"first_name"`
-	LastName        string          `bun:"last_name"           json:"last_name"`
-	Gender          Gender          `bun:"gender"              json:"gender"`
-	PhoneNumber     string          `bun:"phone_number"        json:"phone_number"`
-	Email           string          `bun:"email"               json:"email"`
-	ParticipantType ParticipantType `bun:"participant_type"    json:"participant_type"`
+	FirstName       string          `bun:"first_name" json:"first_name"`
+	LastName        string          `bun:"last_name" json:"last_name"`
+	Gender          Gender          `bun:"gender" json:"gender"`
+	PhoneNumber     string          `bun:"phone_number" json:"phone_number"`
+	Email           string          `bun:"email" json:"email"`
+	ParticipantType ParticipantType `bun:"participant_type" json:"participant_type"`
 
 	AttendanceDates      []string        `bun:"attendance_dates,type:date,array" json:"attendance_dates"` // Date in format `2024-12-31`
-	InterestedActivities []string        `bun:"interested_activities,array"      json:"interested_activities"`
-	DiscoveryChannel     []string        `bun:"discovery_channel,array"          json:"discovery_channel"`
-	ExtraAttributes      json.RawMessage `bun:"extra_attributes,type:jsonb"      json:"extra_attributes"`
+	InterestedActivities []string        `bun:"interested_activities,array" json:"interested_activities"`
+	DiscoveryChannel     []string        `bun:"discovery_channel,array" json:"discovery_channel"`
+	ExtraAttributes      json.RawMessage `bun:"extra_attributes,type:jsonb" json:"extra_attributes"`
 
 	CreatedAt time.Time `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt time.Time `bun:"updated_at,nullzero" json:"updated_at"`

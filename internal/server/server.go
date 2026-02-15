@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
@@ -12,6 +14,7 @@ import (
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/usecases"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/config"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/database"
+	"github.com/esc-chula/intania-openhouse-2026-api/pkg/firebaseadapter"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -46,6 +49,8 @@ func InitServer(cfg config.Config) error {
 	}))
 
 	api := humachi.New(router, humaCfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	// Init Database
 	db := database.NewPostgresDB(cfg.Database())
@@ -59,13 +64,13 @@ func InitServer(cfg config.Config) error {
 	// Create Usecases
 	userUsecase := usecases.NewUserUsecase(userRepo)
 
-	// Create Middleware
-	mid := middlewares.NewMiddleware(cfg, api)
-	_ = mid
+	// Initialize Middleware
+	firebaseAdapter := firebaseadapter.InitFirebaseAuthAdapter(ctx, cfg)
+	mid := middlewares.NewMiddleware(cfg, api, firebaseAdapter)
 
-	// Init Handlers
+	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
-	handlers.InitUserHandler(userGroup, userUsecase)
+	handlers.InitUserHandler(userGroup, userUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)
