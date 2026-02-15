@@ -9,7 +9,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/usecases"
-	extraAttributesValidator "github.com/esc-chula/intania-openhouse-2026-api/pkg/myValidator"
+	"github.com/esc-chula/intania-openhouse-2026-api/pkg/myValidator"
 )
 
 var (
@@ -84,11 +84,11 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		ExtraAttributes:      input.Body.ExtraAttributes,
 	}
 
-	if err := extraAttributesValidator.ValidateAttendanceDate(user); err != nil {
+	if err := myValidator.ValidateAttendanceDate(user); err != nil {
 		return nil, ErrAttendanceDateInvalid
 	}
 
-	if err := extraAttributesValidator.ValidateExtraAttributes(user); err != nil {
+	if err := myValidator.ValidateExtraAttributes(user); err != nil {
 		return nil, ErrExtraAttributesInvalid
 	}
 

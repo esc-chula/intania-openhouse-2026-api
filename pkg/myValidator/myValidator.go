@@ -1,4 +1,4 @@
-package extraAttributesValidator
+package myValidator
 
 import (
 	"bytes"
