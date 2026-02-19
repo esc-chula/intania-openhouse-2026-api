@@ -61,7 +61,7 @@ type CreateUserRequest struct {
 		ParticipantType models.ParticipantType `json:"participant_type" require:"true" enum:"student,intania,other_university_student,teacher,other"`
 		TransportMode   models.TransportMode   `json:"transport_mode" require:"true" enum:"personal_car,domestic_flight,personal_pickup_truck,public_van,taxi,public_bus,personal_electric_car,diesel_railcar,personal_van,public_boat,motorcycle,electric_train"`
 		IsFromBangkok   bool                   `json:"is_from_bangkok" require:"true"`
-		OriginLocation  models.OriginLocation  `json:"origin_location" require:"true"`
+		OriginLocation  models.OriginLocation  `json:"origin_location" require:"true"` // add enum tag to validate here ?
 
 		AttendanceDates      []string        `json:"attendance_dates" require:"true"`
 		InterestedActivities []string        `json:"interested_activities"`
@@ -122,7 +122,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 }
 
 type GetUserRequest struct {
-	Fields string `query:"fields" explode:"true" enum:"id,email,first_name,last_name,gender,phone_number,participant_type,attendance_dates,interested_activities,discovery_channel,extra_attributes"`
+	Fields string `query:"fields" explode:"true" enum:"id,email,first_name,last_name,gender,phone_number,participant_type,transport_mode,is_from_bangkok,origin_location,attendance_dates,interested_activities,discovery_channel,extra_attributes"`
 }
 
 type GetUserResponse struct {
@@ -137,6 +137,9 @@ type GetUserResponseBody struct {
 	Gender               models.Gender          `json:"gender,omitempty"`
 	PhoneNumber          string                 `json:"phone_number,omitempty"`
 	ParticipantType      models.ParticipantType `json:"participant_type,omitempty"`
+	TransportMode        models.TransportMode   `json:"transport_mode,omitempty"`
+	IsFromBangkok        bool                   `json:"is_from_bangkok,omitempty"`
+	OriginLocation       models.OriginLocation  `json:"origin_location,omitempty"`
 	AttendanceDates      []string               `json:"attendance_dates,omitempty"`
 	InterestedActivities []string               `json:"interested_activities,omitempty"`
 	DiscoveryChannel     []string               `json:"discovery_channel,omitempty"`
@@ -179,6 +182,9 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 			Gender:               user.Gender,
 			PhoneNumber:          user.PhoneNumber,
 			ParticipantType:      user.ParticipantType,
+			TransportMode:        user.TransportMode,
+			IsFromBangkok:        user.IsFromBangkok,
+			OriginLocation:       user.OriginLocation,
 			AttendanceDates:      user.AttendanceDates,
 			InterestedActivities: user.InterestedActivities,
 			DiscoveryChannel:     user.DiscoveryChannel,
