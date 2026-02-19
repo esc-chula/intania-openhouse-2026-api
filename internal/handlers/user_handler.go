@@ -122,7 +122,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 }
 
 type GetUserRequest struct {
-	Fields string `query:"fields" explode:"true" enum:"id,email,first_name,last_name,gender,phone_number,participant_type,transport_mode,is_from_bangkok,origin_location,attendance_dates,interested_activities,discovery_channel,extra_attributes"`
+	Fields string `query:"fields" explode:"true"`
 }
 
 type GetUserResponse struct {
