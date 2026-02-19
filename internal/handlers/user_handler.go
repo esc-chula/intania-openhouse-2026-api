@@ -58,7 +58,10 @@ type CreateUserRequest struct {
 		LastName        string                 `json:"last_name" require:"true"`
 		Gender          models.Gender          `json:"gender" require:"true" enum:"male,female,prefer_not_to_say,other"`
 		PhoneNumber     string                 `json:"phone_number" require:"true"`
-		ParticipantType models.ParticipantType `json:"participant_type" require:"true"`
+		ParticipantType models.ParticipantType `json:"participant_type" require:"true" enum:"student,intania,other_university_student,teacher,other"`
+		TransportMode   models.TransportMode   `json:"transport_mode" require:"true" enum:"personal_car,domestic_flight,personal_pickup_truck,public_van,taxi,public_bus,personal_electric_car,diesel_railcar,personal_van,public_boat,motorcycle,electric_train"`
+		IsFromBangkok   bool                   `json:"is_from_bangkok" require:"true"`
+		OriginLocation  models.OriginLocation  `json:"origin_location" require:"true"`
 
 		AttendanceDates      []string        `json:"attendance_dates" require:"true"`
 		InterestedActivities []string        `json:"interested_activities"`
@@ -82,6 +85,9 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		Email:       email,
 
 		ParticipantType:      input.Body.ParticipantType,
+		TransportMode:        input.Body.TransportMode,
+		IsFromBangkok:        input.Body.IsFromBangkok,
+		OriginLocation:       input.Body.OriginLocation,
 		AttendanceDates:      input.Body.AttendanceDates,
 		InterestedActivities: input.Body.InterestedActivities,
 		DiscoveryChannel:     input.Body.DiscoveryChannel,
