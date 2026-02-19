@@ -198,13 +198,13 @@ type User struct {
 }
 
 type StudentExtraAttributes struct {
-	EducationLevel   string   `json:"education_level"`
-	SchoolName       string   `json:"school_name"`
-	StudyPlan        string   `json:"study_plan"`
-	Province         string   `json:"province"`
-	TcasRank         string   `json:"tcas_rank"`
-	InterestedMajors []string `json:"interested_majors"`
-	EmergencyContact string   `json:"emergency_contact"`
+	EducationLevel   string `json:"education_level"`
+	SchoolName       string `json:"school_name"`
+	StudyPlan        string `json:"study_plan"`
+	Province         string `json:"province"`
+	TcasRank         string `json:"tcas_rank"`
+	InterestedMajor  string `json:"interested_major"`
+	EmergencyContact string `json:"emergency_contact"`
 }
 
 type IntaniaExtraAttributes struct {
