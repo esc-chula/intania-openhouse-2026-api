@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
@@ -16,6 +17,9 @@ var (
 	ErrInvalidParticipantType = huma.Error400BadRequest("invalid participant type")
 	ErrExtraAttributesInvalid = huma.Error400BadRequest("extra attributes is invalid")
 	ErrAttendanceDateInvalid  = huma.Error400BadRequest("attendance date is invalid")
+	ErrInvalidGender          = huma.Error400BadRequest("invalid gender")
+	ErrInvalidTransportMode   = huma.Error400BadRequest("invalid transport mode")
+	ErrInvalidOriginLocation  = huma.Error400BadRequest("invalid origin location")
 	ErrEmailNotFound          = huma.Error401Unauthorized("email not found in context")
 	ErrUserNotFound           = huma.Error404NotFound("user not found")
 	ErrUserAlreadyExists      = huma.Error400BadRequest("user already exists")
@@ -54,12 +58,12 @@ type CreateUserRequest struct {
 	Body struct {
 		FirstName       string                 `json:"first_name" require:"true"`
 		LastName        string                 `json:"last_name" require:"true"`
-		Gender          models.Gender          `json:"gender" require:"true" enum:"male,female,prefer_not_to_say,other"`
+		Gender          models.Gender          `json:"gender" require:"true"`
 		PhoneNumber     string                 `json:"phone_number" require:"true"`
-		ParticipantType models.ParticipantType `json:"participant_type" require:"true" enum:"student,intania,other_university_student,teacher,other"`
-		TransportMode   models.TransportMode   `json:"transport_mode" require:"true" enum:"personal_car,domestic_flight,personal_pickup_truck,public_van,taxi,public_bus,personal_electric_car,diesel_railcar,personal_van,public_boat,motorcycle,electric_train"`
+		ParticipantType models.ParticipantType `json:"participant_type" require:"true"`
+		TransportMode   models.TransportMode   `json:"transport_mode" require:"true"`
 		IsFromBangkok   bool                   `json:"is_from_bangkok" require:"true"`
-		OriginLocation  models.OriginLocation  `json:"origin_location" require:"true"` // add enum tag to validate here ?
+		OriginLocation  models.OriginLocation  `json:"origin_location" require:"true"`
 
 		AttendanceDates      []string        `json:"attendance_dates" require:"true"`
 		InterestedActivities []string        `json:"interested_activities"`
@@ -94,6 +98,21 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 
 	if err := myValidator.ValidateAttendanceDate(user); err != nil {
 		return nil, ErrAttendanceDateInvalid
+	}
+
+	if err := myValidator.ValidateUserEnums(user); err != nil {
+		switch err {
+		case myValidator.ErrInvalidGender:
+			return nil, ErrInvalidGender
+		case myValidator.ErrInvalidParticipantType:
+			return nil, ErrInvalidParticipantType
+		case myValidator.ErrInvalidTransportMode:
+			return nil, ErrInvalidTransportMode
+		case myValidator.ErrInvalidOriginLocation:
+			return nil, ErrInvalidOriginLocation
+		default:
+			return nil, huma.Error400BadRequest(err.Error())
+		}
 	}
 
 	err := myValidator.ValidateExtraAttributes(user)
