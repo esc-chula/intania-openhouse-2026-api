@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"strings"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
@@ -122,7 +120,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 }
 
 type GetUserRequest struct {
-	Fields string `query:"fields" explode:"true"`
+	Fields []string `query:"fields" explode:"true" enum:"id,email,first_name,last_name,gender,phone_number,participant_type,transport_mode,is_from_bangkok,origin_location,attendance_dates,interested_activities,discovery_channel,extra_attributes"`
 }
 
 type GetUserResponse struct {
@@ -153,12 +151,7 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 		return nil, ErrEmailNotFound
 	}
 
-	fields := []string{}
-
-	if input.Fields != "" {
-		fields = strings.Split(input.Fields, ",")
-	}
-
+	fields := input.Fields
 	log.Println(fields)
 	// default
 	if len(fields) == 0 {
