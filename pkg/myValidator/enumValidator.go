@@ -8,6 +8,7 @@ import (
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 )
 
+//go:embed enums.json
 var enumsJSON []byte
 
 var (
