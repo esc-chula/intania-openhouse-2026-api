@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	ErrInvalidParticipantType = errors.New("invalid participant type")
 	ErrExtraAttributesInvalid = errors.New("extra attributes invalid")
 )
 
