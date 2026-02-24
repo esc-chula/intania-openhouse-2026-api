@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
@@ -18,6 +17,9 @@ var (
 	ErrInvalidParticipantType = huma.Error400BadRequest("invalid participant type")
 	ErrExtraAttributesInvalid = huma.Error400BadRequest("extra attributes is invalid")
 	ErrAttendanceDateInvalid  = huma.Error400BadRequest("attendance date is invalid")
+	ErrInvalidGender          = huma.Error400BadRequest("invalid gender")
+	ErrInvalidTransportMode   = huma.Error400BadRequest("invalid transport mode")
+	ErrInvalidOriginLocation  = huma.Error400BadRequest("invalid origin location")
 	ErrEmailNotFound          = huma.Error401Unauthorized("email not found in context")
 	ErrUserNotFound           = huma.Error404NotFound("user not found")
 	ErrUserAlreadyExists      = huma.Error400BadRequest("user already exists")
@@ -56,9 +58,12 @@ type CreateUserRequest struct {
 	Body struct {
 		FirstName       string                 `json:"first_name" require:"true"`
 		LastName        string                 `json:"last_name" require:"true"`
-		Gender          models.Gender          `json:"gender" require:"true" enum:"male,female,prefer_not_to_say,other"`
+		Gender          models.Gender          `json:"gender" require:"true"`
 		PhoneNumber     string                 `json:"phone_number" require:"true"`
 		ParticipantType models.ParticipantType `json:"participant_type" require:"true"`
+		TransportMode   models.TransportMode   `json:"transport_mode" require:"true"`
+		IsFromBangkok   bool                   `json:"is_from_bangkok" require:"true"`
+		OriginLocation  models.OriginLocation  `json:"origin_location" require:"true"`
 
 		AttendanceDates      []string        `json:"attendance_dates" require:"true"`
 		InterestedActivities []string        `json:"interested_activities"`
@@ -82,6 +87,9 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		Email:       email,
 
 		ParticipantType:      input.Body.ParticipantType,
+		TransportMode:        input.Body.TransportMode,
+		IsFromBangkok:        input.Body.IsFromBangkok,
+		OriginLocation:       input.Body.OriginLocation,
 		AttendanceDates:      input.Body.AttendanceDates,
 		InterestedActivities: input.Body.InterestedActivities,
 		DiscoveryChannel:     input.Body.DiscoveryChannel,
@@ -90,6 +98,21 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 
 	if err := myValidator.ValidateAttendanceDate(user); err != nil {
 		return nil, ErrAttendanceDateInvalid
+	}
+
+	if err := myValidator.ValidateUserEnums(user); err != nil {
+		switch err {
+		case myValidator.ErrInvalidGender:
+			return nil, ErrInvalidGender
+		case myValidator.ErrInvalidParticipantType:
+			return nil, ErrInvalidParticipantType
+		case myValidator.ErrInvalidTransportMode:
+			return nil, ErrInvalidTransportMode
+		case myValidator.ErrInvalidOriginLocation:
+			return nil, ErrInvalidOriginLocation
+		default:
+			return nil, huma.Error400BadRequest(err.Error())
+		}
 	}
 
 	err := myValidator.ValidateExtraAttributes(user)
@@ -116,7 +139,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 }
 
 type GetUserRequest struct {
-	Fields string `query:"fields" explode:"true" enum:"id,email,first_name,last_name,gender,phone_number,participant_type,attendance_dates,interested_activities,discovery_channel,extra_attributes"`
+	Fields []string `query:"fields" explode:"true" enum:"id,email,first_name,last_name,gender,phone_number,participant_type,transport_mode,is_from_bangkok,origin_location,attendance_dates,interested_activities,discovery_channel,extra_attributes"`
 }
 
 type GetUserResponse struct {
@@ -131,6 +154,9 @@ type GetUserResponseBody struct {
 	Gender               models.Gender          `json:"gender,omitempty"`
 	PhoneNumber          string                 `json:"phone_number,omitempty"`
 	ParticipantType      models.ParticipantType `json:"participant_type,omitempty"`
+	TransportMode        models.TransportMode   `json:"transport_mode,omitempty"`
+	IsFromBangkok        bool                   `json:"is_from_bangkok,omitempty"`
+	OriginLocation       models.OriginLocation  `json:"origin_location,omitempty"`
 	AttendanceDates      []string               `json:"attendance_dates,omitempty"`
 	InterestedActivities []string               `json:"interested_activities,omitempty"`
 	DiscoveryChannel     []string               `json:"discovery_channel,omitempty"`
@@ -144,12 +170,7 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 		return nil, ErrEmailNotFound
 	}
 
-	fields := []string{}
-
-	if input.Fields != "" {
-		fields = strings.Split(input.Fields, ",")
-	}
-
+	fields := input.Fields
 	log.Println(fields)
 	// default
 	if len(fields) == 0 {
@@ -173,6 +194,9 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 			Gender:               user.Gender,
 			PhoneNumber:          user.PhoneNumber,
 			ParticipantType:      user.ParticipantType,
+			TransportMode:        user.TransportMode,
+			IsFromBangkok:        user.IsFromBangkok,
+			OriginLocation:       user.OriginLocation,
 			AttendanceDates:      user.AttendanceDates,
 			InterestedActivities: user.InterestedActivities,
 			DiscoveryChannel:     user.DiscoveryChannel,
