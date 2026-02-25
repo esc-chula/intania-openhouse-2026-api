@@ -21,6 +21,15 @@ type Workshop struct {
 	RegisteredCount int       `bun:"registered_count" json:"registered_count"`
 }
 
+type WorkshopFilter struct {
+	Search    *string
+	Category  *string
+	EventDate *string
+	HideFull  bool
+	SortBy    string // "start_time" | "name"
+	Order     string // "ASC" | "DESC"
+}
+
 type Status string
 type Booking struct {
 	bun.BaseModel `bun:"table:booking,alias:bk"`
