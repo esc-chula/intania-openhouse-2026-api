@@ -150,5 +150,9 @@
     {"label": "จังหวัดอุตรดิตถ์", "value": "uttaradit"},
     {"label": "จังหวัดยะลา", "value": "yala"},
     {"label": "จังหวัดยโสธร", "value": "yasothon"}
+  ],
+  "workshop_categories": [
+    {"label": "Department", "value": "Department"},
+    {"label": "Club", "value": "Club"}
   ]
 }

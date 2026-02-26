@@ -6,6 +6,12 @@ import (
 )
 
 type Category string
+
+const (
+	CategoryDepartment Category = "Department"
+	CategoryClub       Category = "Club"
+)
+
 type Workshop struct {
 	bun.BaseModel   `bun:"table:workshop,alias:ws"`
 	ID              int64     `bun:"id,pk,autoincrement" json:"id"`

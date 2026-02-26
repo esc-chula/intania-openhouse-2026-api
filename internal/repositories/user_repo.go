@@ -16,7 +16,6 @@ var (
 	ErrUserAlreadyExists = errors.New("user already exists")
 )
 
-// TODO:
 type UserRepo interface {
 	CreateUser(ctx context.Context, user *models.User) error
 	GetUserByEmail(ctx context.Context, email string, fields []string) (*models.User, error)
