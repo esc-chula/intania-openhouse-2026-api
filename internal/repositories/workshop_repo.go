@@ -50,17 +50,17 @@ func (r *workshopRepoImpl) ListWorkshop(ctx context.Context, filter models.Works
 	workshops := make([]*models.Workshop, 0)
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
 		query := idb.NewSelect().Model(&workshops)
-		if filter.Search != nil && *filter.Search != "" {
+		if filter.Search != "" {
 			query.Where(
 				"(name ILIKE ? OR description ILIKE ?)",
-				"%"+*filter.Search+"%",
-				"%"+*filter.Search+"%",
+				"%"+filter.Search+"%",
+				"%"+filter.Search+"%",
 			)
 		}
-		if filter.Category != nil {
+		if filter.Category != "" {
 			query.Where("category = ?", filter.Category)
 		}
-		if filter.EventDate != nil {
+		if filter.EventDate != "" {
 			query.Where("event_date = ?", filter.EventDate)
 		}
 		if filter.HideFull {

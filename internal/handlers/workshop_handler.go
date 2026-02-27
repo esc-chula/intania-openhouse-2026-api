@@ -31,7 +31,7 @@ func InitWorkshopHandler(api huma.API, usecase usecases.WorkshopUsecase, mid mid
 		mid:     mid,
 	}
 
-	api.UseMiddleware(mid.WithAuthContext)
+	// api.UseMiddleware(mid.WithAuthContext)
 
 	huma.Get(api, "/{id}", handler.GetWorkshop, func(o *huma.Operation) {
 		o.Summary = "Get workshop details"
@@ -102,12 +102,12 @@ func (h *workshopHandler) GetWorkshop(ctx context.Context, input *GetWorkshopReq
 }
 
 type ListWorkshopRequest struct {
-	Search    *string `query:"search"`
-	Category  *string `query:"category"`
-	EventDate *string `query:"event_date"`
-	HideFull  bool    `query:"hide_full" default:"false"`
-	SortBy    string  `query:"sort_by" enum:"start_time,name" default:"start_time"`
-	Order     string  `query:"order" enum:"asc,desc" default:"asc"`
+	Search    string `query:"search"`
+	Category  string `query:"category"`
+	EventDate string `query:"event_date"`
+	HideFull  bool   `query:"hide_full" default:"false"`
+	SortBy    string `query:"sort_by" enum:"start_time,name" default:"start_time"`
+	Order     string `query:"order" enum:"asc,desc" default:"asc"`
 }
 type ListWorkshopResponse struct {
 	Body ListWorkshopResponseBody `json:"body"`
@@ -131,15 +131,15 @@ type WorkshopItem struct {
 
 func (h *workshopHandler) ListWorkshop(ctx context.Context, input *ListWorkshopRequest) (*ListWorkshopResponse, error) {
 	// Validate category if provided
-	if input.Category != nil {
-		if err := myValidator.ValidateWorkshopCategory(*input.Category); err != nil {
+	if input.Category != "" {
+		if err := myValidator.ValidateWorkshopCategory(input.Category); err != nil {
 			return nil, ErrInvalidCategory
 		}
 	}
 
 	// Validate event_date format if provided
-	if input.EventDate != nil {
-		if err := myValidator.ValidateEventDate(*input.EventDate); err != nil {
+	if input.EventDate != "" {
+		if err := myValidator.ValidateEventDate(input.EventDate); err != nil {
 			return nil, ErrInvalidEventDate
 		}
 	}

@@ -13,7 +13,7 @@ const (
 )
 
 type Workshop struct {
-	bun.BaseModel   `bun:"table:workshop,alias:ws"`
+	bun.BaseModel   `bun:"table:workshops,alias:ws"`
 	ID              int64     `bun:"id,pk,autoincrement" json:"id"`
 	Name            string    `bun:"name" json:"name"`
 	Description     string    `bun:"description" json:"description"`
@@ -28,9 +28,9 @@ type Workshop struct {
 }
 
 type WorkshopFilter struct {
-	Search    *string
-	Category  *string
-	EventDate *string
+	Search    string
+	Category  string
+	EventDate string
 	HideFull  bool
 	SortBy    string // "start_time" | "name"
 	Order     string // "ASC" | "DESC"

@@ -58,19 +58,22 @@ func InitServer(cfg config.Config) error {
 		bundebug.WithVerbose(!cfg.App().IsProduction),
 	))
 
-	// Create Repositories
-	userRepo := repositories.NewUserRepo(db)
-
-	// Create Usecases
-	userUsecase := usecases.NewUserUsecase(userRepo)
-
 	// Initialize Middleware
 	firebaseAdapter := firebaseadapter.InitFirebaseAuthAdapter(ctx, cfg)
 	mid := middlewares.NewMiddleware(cfg, api, firebaseAdapter)
 
+	// Create Repositories
+	userRepo := repositories.NewUserRepo(db)
+	workshopRepo := repositories.NewWorkshopRepo(db)
+	// Create Usecases
+	userUsecase := usecases.NewUserUsecase(userRepo)
+	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
+
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
+	workshopGroup := huma.NewGroup(api, "/workshops")
 	handlers.InitUserHandler(userGroup, userUsecase, mid)
+	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)
