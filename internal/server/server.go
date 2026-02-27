@@ -12,6 +12,7 @@ import (
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/repositories"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/usecases"
+	"github.com/esc-chula/intania-openhouse-2026-api/pkg/baserepo"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/config"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/database"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/firebaseadapter"
@@ -65,15 +66,22 @@ func InitServer(cfg config.Config) error {
 	// Create Repositories
 	userRepo := repositories.NewUserRepo(db)
 	workshopRepo := repositories.NewWorkshopRepo(db)
+	bookingRepo := repositories.NewBookingRepo(db)
+
+	// Create Transactioner
+	transactioner := baserepo.NewTransactioner(db)
+
 	// Create Usecases
 	userUsecase := usecases.NewUserUsecase(userRepo)
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
+	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, transactioner)
 
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
 	workshopGroup := huma.NewGroup(api, "/workshops")
 	handlers.InitUserHandler(userGroup, userUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
+	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)
