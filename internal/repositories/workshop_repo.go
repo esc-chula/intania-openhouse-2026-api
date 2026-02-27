@@ -89,7 +89,7 @@ func (r *workshopRepoImpl) IncrementRegisteredCount(ctx context.Context, worksho
 			Table("workshops").
 			Set("registered_count = registered_count + 1").
 			Where("id = ?", workshopID).
-			Where("registered_count < total_seats").
+			Where("registered_count < total_seats"). // race safe
 			Exec(ctx)
 		if err != nil {
 			return err
