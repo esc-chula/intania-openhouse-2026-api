@@ -12,11 +12,14 @@ import (
 
 var (
 	ErrWorkshopNotFound = errors.New("workshop not found")
+	ErrWorkshopFull     = errors.New("workshop is full")
 )
 
 type WorkshopRepo interface {
 	GetWorkshopById(ctx context.Context, id int64, fields []string) (*models.Workshop, error)
 	ListWorkshop(ctx context.Context, filter models.WorkshopFilter) ([]*models.Workshop, error)
+	IncrementRegisteredCount(ctx context.Context, workshopID int64) error
+	DecrementRegisteredCount(ctx context.Context, workshopID int64) error
 }
 
 type workshopRepoImpl struct {
@@ -78,4 +81,40 @@ func (r *workshopRepoImpl) ListWorkshop(ctx context.Context, filter models.Works
 		return nil, err
 	}
 	return workshops, nil
+}
+
+func (r *workshopRepoImpl) IncrementRegisteredCount(ctx context.Context, workshopID int64) error {
+	return r.exec.Run(ctx, func(idb bun.IDB) error {
+		result, err := idb.NewUpdate().
+			Table("workshops").
+			Set("registered_count = registered_count + 1").
+			Where("id = ?", workshopID).
+			Where("registered_count < total_seats").
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+		if n, err := result.RowsAffected(); err == nil && n == 0 {
+			return ErrWorkshopFull
+		}
+		return nil
+	})
+}
+
+func (r *workshopRepoImpl) DecrementRegisteredCount(ctx context.Context, workshopID int64) error {
+	return r.exec.Run(ctx, func(idb bun.IDB) error {
+		result, err := idb.NewUpdate().
+			Table("workshops").
+			Set("registered_count = registered_count - 1").
+			Where("id = ?", workshopID).
+			Where("registered_count > 0").
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+		if n, err := result.RowsAffected(); err == nil && n == 0 {
+			return ErrWorkshopNotFound
+		}
+		return nil
+	})
 }
