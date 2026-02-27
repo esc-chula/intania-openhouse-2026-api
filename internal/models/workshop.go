@@ -37,11 +37,27 @@ type WorkshopFilter struct {
 }
 
 type Status string
+
+const (
+	StatusConfirmed Status = "Confirmed"
+	StatusCancelled Status = "Cancelled"
+)
+
 type Booking struct {
-	bun.BaseModel `bun:"table:booking,alias:bk"`
+	bun.BaseModel `bun:"table:bookings,alias:bk"`
 	ID            int64     `bun:"id,pk,autoincrement" json:"id"`
 	UserID        int64     `bun:"user_id" json:"user_id"`
 	WorkshopID    int64     `bun:"workshop_id" json:"workshop_id"`
 	Status        Status    `bun:"status" json:"status"`
 	CreatedAt     time.Time `bun:"created_at,nullzero" json:"created_at"`
+}
+
+// BookingWithTime is used for time-overlap checking.
+// Returned by joining bookings with workshops.
+type BookingWithTime struct {
+	bun.BaseModel `bun:"table:bookings,alias:bk"`
+	BookingID     int64     `bun:"id" json:"booking_id"`
+	WorkshopID    int64     `bun:"workshop_id" json:"workshop_id"`
+	StartTime     time.Time `bun:"start_time" json:"start_time"`
+	EndTime       time.Time `bun:"end_time" json:"end_time"`
 }
