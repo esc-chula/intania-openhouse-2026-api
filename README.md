@@ -14,7 +14,7 @@ Setup
 # 1) Download Go libraries
 go mod download
 
-# 2) Configure env (you can also modify it as needed)
+# 2) Configure env and copy `service-account.json` file into the root directory
 cp .env.example .env.dev
 
 # 3) Start dependencies (Postgres)
@@ -25,6 +25,9 @@ make setup
 
 # 5) Run API with hot-reload
 make up
+
+# Or run without hot-reload
+go run . --env-file .env.dev serve
 ```
 
 Migrations (goose)
