@@ -11,12 +11,13 @@ import (
 )
 
 var (
-	ErrTimeConflict    = errors.New("time conflict with existing booking")
-	ErrBookingNotFound = errors.New("booking not found")
+	ErrTimeConflict              = errors.New("time conflict with existing booking")
+	ErrParticipantTypeNotAllowed = errors.New("participant type is not allowed")
+	ErrBookingNotFound           = errors.New("booking not found")
 )
 
 type BookingUsecase interface {
-	BookWorkshop(ctx context.Context, userID int64, workshopID int64) error
+	BookWorkshop(ctx context.Context, userID int64, userEmail string, workshopID int64) error
 	CancelBooking(ctx context.Context, userID int64, workshopID int64) error
 	GetMyBookings(ctx context.Context, userID int64) ([]*models.Booking, error)
 }
@@ -24,22 +25,25 @@ type BookingUsecase interface {
 type bookingUsecaseImpl struct {
 	bookingRepo   repositories.BookingRepo
 	workshopRepo  repositories.WorkshopRepo
+	userRepo      repositories.UserRepo
 	transactioner baserepo.Transactioner
 }
 
 func NewBookingUsecase(
 	bookingRepo repositories.BookingRepo,
 	workshopRepo repositories.WorkshopRepo,
+	userRepo repositories.UserRepo,
 	transactioner baserepo.Transactioner,
 ) BookingUsecase {
 	return &bookingUsecaseImpl{
 		bookingRepo:   bookingRepo,
 		workshopRepo:  workshopRepo,
+		userRepo:      userRepo,
 		transactioner: transactioner,
 	}
 }
 
-func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, workshopID int64) error {
+func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, userEmail string, workshopID int64) error {
 	workshop, err := u.workshopRepo.GetWorkshopById(ctx, workshopID, []string{"id", "event_date", "start_time", "end_time", "total_seats", "registered_count"})
 	if err != nil {
 		return err
@@ -47,6 +51,17 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, wor
 	if workshop.RegisteredCount >= workshop.TotalSeats {
 		return repositories.ErrWorkshopFull
 	}
+
+	// check participant type
+	user, err := u.userRepo.GetUserByEmail(ctx, userEmail, []string{"participant_type"})
+	if err != nil {
+		return err
+	}
+	switch user.ParticipantType {
+	case models.ParticipantTypeAlumni, models.ParticipantTypeTeacher, models.ParticipantTypeOther:
+		return ErrParticipantTypeNotAllowed
+	}
+
 	// Get user's existing confirmed bookings for the same date (with time info)
 	existingBookings, err := u.bookingRepo.GetConfirmedBookingsWithWorkshop(ctx, userID, workshop.EventDate)
 	if err != nil {

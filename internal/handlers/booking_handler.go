@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	ErrWorkshopFull    = huma.Error400BadRequest("workshop is full")
-	ErrTimeConflict    = huma.Error400BadRequest("time conflict with existing booking")
-	ErrAlreadyBooked   = huma.Error400BadRequest("already booked this workshop")
-	ErrBookingNotFound = huma.Error404NotFound("booking not found")
+	ErrWorkshopFull              = huma.Error400BadRequest("workshop is full")
+	ErrTimeConflict              = huma.Error400BadRequest("time conflict with existing booking")
+	ErrParticipantTypeNotAllowed = huma.Error403Forbidden("participant type is not allowed")
+	ErrAlreadyBooked             = huma.Error400BadRequest("already booked this workshop")
+	ErrBookingNotFound           = huma.Error404NotFound("booking not found")
 )
 
 type bookingHandler struct {
@@ -71,8 +72,11 @@ func (h *bookingHandler) BookWorkshop(ctx context.Context, input *BookWorkshopRe
 	if err != nil {
 		return nil, err
 	}
-
-	err = h.bookingUsecase.BookWorkshop(ctx, userID, input.WorkshopID)
+	userEmail, ok := ctx.Value("email").(string)
+	if !ok || userEmail == "" {
+		return nil, ErrEmailNotFound
+	}
+	err = h.bookingUsecase.BookWorkshop(ctx, userID, userEmail, input.WorkshopID)
 	if err != nil {
 		switch err {
 		case repositories.ErrWorkshopNotFound:
@@ -83,6 +87,8 @@ func (h *bookingHandler) BookWorkshop(ctx context.Context, input *BookWorkshopRe
 			return nil, ErrAlreadyBooked
 		case usecases.ErrTimeConflict:
 			return nil, ErrTimeConflict
+		case usecases.ErrParticipantTypeNotAllowed:
+			return nil, ErrParticipantTypeNotAllowed
 		default:
 			return nil, ErrInternalServerError
 		}
