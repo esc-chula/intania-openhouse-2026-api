@@ -41,15 +41,18 @@ type Status string
 const (
 	StatusConfirmed Status = "Confirmed"
 	StatusCancelled Status = "Cancelled"
+	StatusAttended  Status = "attended"
+	StatusAbsent    Status = "absent"
 )
 
 type Booking struct {
 	bun.BaseModel `bun:"table:bookings,alias:bk"`
-	ID            int64     `bun:"id,pk,autoincrement" json:"id"`
-	UserID        int64     `bun:"user_id" json:"user_id"`
-	WorkshopID    int64     `bun:"workshop_id" json:"workshop_id"`
-	Status        Status    `bun:"status" json:"status"`
-	CreatedAt     time.Time `bun:"created_at,nullzero" json:"created_at"`
+	ID            int64      `bun:"id,pk,autoincrement" json:"id"`
+	UserID        int64      `bun:"user_id" json:"user_id"`
+	WorkshopID    int64      `bun:"workshop_id" json:"workshop_id"`
+	Status        Status     `bun:"status" json:"status"`
+	CreatedAt     time.Time  `bun:"created_at,nullzero" json:"created_at"`
+	CheckedInAt   *time.Time `bun:"checked_in_at,nullzero" json:"checked_in_at"`
 }
 
 // BookingWithTime is used for time-overlap checking.
