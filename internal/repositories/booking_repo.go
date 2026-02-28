@@ -21,6 +21,7 @@ type BookingRepo interface {
 	GetConfirmedBookingsWithWorkshop(ctx context.Context, userID int64, eventDate string) ([]models.BookingWithTime, error)
 	CancelBooking(ctx context.Context, userID int64, workshopID int64) error
 	GetUserBookings(ctx context.Context, userID int64) ([]*models.Booking, error)
+	UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error
 }
 
 type bookingRepoImpl struct {
@@ -101,4 +102,22 @@ func (r *bookingRepoImpl) GetUserBookings(ctx context.Context, userID int64) ([]
 		return nil, err
 	}
 	return bookings, nil
+}
+
+func (r *bookingRepoImpl) UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error {
+	return r.exec.Run(ctx, func(idb bun.IDB) error {
+		booking := new(models.Booking)
+		result, err := idb.NewUpdate().
+			Model(booking).
+			Set("status = ?", status).
+			Where("id = ?", bookingID).
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+		if n, err := result.RowsAffected(); err == nil && n == 0 {
+			return ErrBookingNotFound
+		}
+		return nil
+	})
 }

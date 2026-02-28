@@ -20,6 +20,7 @@ type BookingUsecase interface {
 	BookWorkshop(ctx context.Context, userID int64, userEmail string, workshopID int64) error
 	CancelBooking(ctx context.Context, userID int64, workshopID int64) error
 	GetMyBookings(ctx context.Context, userID int64) ([]*models.Booking, error)
+	UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error
 }
 
 type bookingUsecaseImpl struct {
@@ -102,4 +103,8 @@ func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, userID int64, wo
 
 func (u *bookingUsecaseImpl) GetMyBookings(ctx context.Context, userID int64) ([]*models.Booking, error) {
 	return u.bookingRepo.GetUserBookings(ctx, userID)
+}
+
+func (u *bookingUsecaseImpl) UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error {
+	return u.bookingRepo.UpdateBookingStatus(ctx, bookingID, status)
 }
