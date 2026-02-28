@@ -11,11 +11,12 @@ type Gender string
 type ParticipantType string
 
 const (
-	ParticipantTypeStudent                ParticipantType = "student"                  // นักเรียน/ผู้ที่สนใจศึกษาต่อ
-	ParticipantTypeIntania                ParticipantType = "intania"                  // นิสิตปัจจุบัน/นิสิตเก่าวิศวะจุฬาฯ
-	ParticipantTypeOtherUniversityStudent ParticipantType = "other_university_student" // นิสิตจากมหาลัยอื่น
-	ParticipantTypeTeacher                ParticipantType = "teacher"                  // ครู
-	ParticipantTypeOther                  ParticipantType = "other"                    // ผู้ปกครอง/บุคคลภายนอก
+	ParticipantTypeStudent        ParticipantType = "student"         // นักเรียน/ผู้ที่สนใจศึกษาต่อ
+	ParticipantTypeIntania        ParticipantType = "intania"         // นิสิตปัจจุบันวิศวะจุฬาฯ
+	ParticipantTypeOutsideStudent ParticipantType = "outside_student" // นิสิตจากมหาวิทยาลัยอื่น/นิสิตจุฬาฯ คณะอื่น
+	ParticipantTypeAlumni         ParticipantType = "alumni"          // ศิษย์เก่าวิศวะจุฬาฯ
+	ParticipantTypeTeacher        ParticipantType = "teacher"         // ครู
+	ParticipantTypeOther          ParticipantType = "other"           // ผู้ปกครอง/บุคคลภายนอก
 )
 
 type TransportMode string
@@ -59,7 +60,7 @@ type IntaniaExtraAttributes struct {
 	IntaniaGeneration string `json:"intania_generation"`
 }
 
-type OtherUniversityStudentExtraAttributes struct {
+type OutsideStudentExtraAttributes struct {
 	YearLevel  string `json:"year_level"`
 	Faculty    string `json:"faculty"`
 	University string `json:"university"`

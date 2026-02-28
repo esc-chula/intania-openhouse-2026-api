@@ -31,9 +31,15 @@ func ValidateExtraAttributes(user *models.User) error {
 			return ErrExtraAttributesInvalid
 		}
 		return nil
-	case models.ParticipantTypeOtherUniversityStudent:
-		var otherUniversityStudentExtraAttributes models.OtherUniversityStudentExtraAttributes
-		if err := validateRawMessage(user.ExtraAttributes, &otherUniversityStudentExtraAttributes); err != nil {
+	case models.ParticipantTypeOutsideStudent:
+		var outsideStudentExtraAttributes models.OutsideStudentExtraAttributes
+		if err := validateRawMessage(user.ExtraAttributes, &outsideStudentExtraAttributes); err != nil {
+			return ErrExtraAttributesInvalid
+		}
+		return nil
+	case models.ParticipantTypeAlumni:
+		var alumniExtraAttributes models.IntaniaExtraAttributes
+		if err := validateRawMessage(user.ExtraAttributes, &alumniExtraAttributes); err != nil {
 			return ErrExtraAttributesInvalid
 		}
 		return nil
