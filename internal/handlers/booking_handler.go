@@ -63,7 +63,7 @@ type BookWorkshopRequest struct {
 }
 
 type BookWorkshopResponse struct {
-	Body struct{}
+	Body *struct{}
 }
 
 func (h *bookingHandler) BookWorkshop(ctx context.Context, input *BookWorkshopRequest) (*BookWorkshopResponse, error) {
@@ -96,7 +96,7 @@ type CancelBookingRequest struct {
 }
 
 type CancelBookingResponse struct {
-	Body struct{}
+	Body *struct{}
 }
 
 func (h *bookingHandler) CancelBooking(ctx context.Context, input *CancelBookingRequest) (*CancelBookingResponse, error) {
