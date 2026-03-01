@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/baserepo"
@@ -131,6 +132,7 @@ func (r *bookingRepoImpl) AttendBooking(ctx context.Context, bookingID int64) er
 		result, err := idb.NewUpdate().
 			Model((*models.Booking)(nil)).
 			Set("status = ?", models.StatusAttended).
+			Set("checked_in_at = ?", time.Now()).
 			Where("id = ?", bookingID).
 			Where("status = ?", models.StatusConfirmed). // race safe
 			Exec(ctx)
