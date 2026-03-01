@@ -12,8 +12,10 @@ import (
 )
 
 var (
-	ErrAlreadyBooked   = errors.New("user already booked this workshop")
-	ErrBookingNotFound = errors.New("booking not found")
+	ErrAlreadyBooked        = errors.New("user already booked this workshop")
+	ErrBookingNotFound      = errors.New("booking not found")
+	ErrInvalidBookingStatus = errors.New("invalid booking status")
+	ErrInvalidCheckInCode   = errors.New("invalid check-in code")
 )
 
 type BookingRepo interface {
@@ -22,6 +24,8 @@ type BookingRepo interface {
 	CancelBooking(ctx context.Context, userID int64, workshopID int64) error
 	GetUserBookings(ctx context.Context, userID int64) ([]*models.Booking, error)
 	UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error
+	GetBookingIDAndStatus(ctx context.Context, email string, checkInCode string) (int64, models.Status, error)
+	AttendBooking(ctx context.Context, bookingID int64) error
 }
 
 type bookingRepoImpl struct {
@@ -120,4 +124,48 @@ func (r *bookingRepoImpl) UpdateBookingStatus(ctx context.Context, bookingID int
 		}
 		return nil
 	})
+}
+
+func (r *bookingRepoImpl) AttendBooking(ctx context.Context, bookingID int64) error {
+	return r.exec.Run(ctx, func(idb bun.IDB) error {
+		result, err := idb.NewUpdate().
+			Model((*models.Booking)(nil)).
+			Set("status = ?", models.StatusAttended).
+			Where("id = ?", bookingID).
+			Where("status = ?", models.StatusConfirmed). // race safe
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+
+		if n, err := result.RowsAffected(); err == nil && n == 0 {
+			return ErrInvalidBookingStatus
+		}
+
+		return err
+	})
+}
+
+func (r *bookingRepoImpl) GetBookingIDAndStatus(ctx context.Context, email string, checkInCode string) (int64, models.Status, error) {
+	var booking models.Booking
+	err := r.exec.Run(ctx, func(idb bun.IDB) error {
+		err := idb.NewSelect().
+			Model((*models.Booking)(nil)).
+			ColumnExpr("bk.id, bk.status").
+			Join("JOIN users AS u ON u.id = bk.user_id").
+			Join("JOIN workshops AS ws ON ws.id = bk.workshop_id").
+			Where("u.email = ?", email).
+			Where("ws.check_in_code = ?", checkInCode).
+			Scan(ctx, &booking)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return ErrInvalidCheckInCode
+			}
+			return err
+		}
+
+		return nil
+	})
+
+	return booking.ID, booking.Status, err
 }

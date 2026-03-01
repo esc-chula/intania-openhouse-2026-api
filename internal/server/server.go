@@ -67,6 +67,7 @@ func InitServer(cfg config.Config) error {
 	userRepo := repositories.NewUserRepo(db)
 	workshopRepo := repositories.NewWorkshopRepo(db)
 	bookingRepo := repositories.NewBookingRepo(db)
+	boothRepo := repositories.NewBoothRepo(db)
 
 	// Create Transactioner
 	transactioner := baserepo.NewTransactioner(db)
@@ -75,13 +76,17 @@ func InitServer(cfg config.Config) error {
 	userUsecase := usecases.NewUserUsecase(userRepo)
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
+	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
 
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
 	workshopGroup := huma.NewGroup(api, "/workshops")
+	checkInGroup := huma.NewGroup(api, "/check-in")
+
 	handlers.InitUserHandler(userGroup, userUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
 	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
+	handlers.InitCheckInHandler(checkInGroup, checkInUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)
