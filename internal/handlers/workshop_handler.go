@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"context"
+	"log"
+	"time"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/repositories"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/usecases"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/myValidator"
-	"log"
-	"time"
 )
 
 var (
@@ -30,17 +31,20 @@ func InitWorkshopHandler(api huma.API, usecase usecases.WorkshopUsecase, mid mid
 		usecase: usecase,
 		mid:     mid,
 	}
+	workshopTag := "workshop"
 
 	huma.Get(api, "/{id}", handler.GetWorkshop, func(o *huma.Operation) {
 		o.Summary = "Get workshop details"
 		o.Description = "Retrieve workshop details by ID path parameter"
 		o.DefaultStatus = 200
+		o.Tags = []string{workshopTag}
 	})
 
 	huma.Get(api, "", handler.ListWorkshop, func(o *huma.Operation) {
 		o.Summary = "Get a list of workshops"
 		o.Description = "Retrieve a list of workshops with optional filters"
 		o.DefaultStatus = 200
+		o.Tags = []string{workshopTag}
 	})
 }
 

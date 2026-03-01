@@ -36,22 +36,26 @@ func InitBookingHandler(
 		userUsecase:    userUsecase,
 		mid:            mid,
 	}
+	bookingTag := "booking"
 
 	huma.Post(workshopGroup, "/{workshop_id}/book", handler.BookWorkshop, func(o *huma.Operation) {
 		o.Summary = "Book a workshop"
 		o.Description = "Create a booking for a workshop. Prevents double-booking and checks seat availability."
 		o.DefaultStatus = 201
+		o.Tags = []string{bookingTag}
 	})
 
 	huma.Delete(workshopGroup, "/{workshop_id}/book", handler.CancelBooking, func(o *huma.Operation) {
 		o.Summary = "Cancel a workshop booking"
 		o.Description = "Cancel an existing workshop booking"
 		o.DefaultStatus = 204
+		o.Tags = []string{bookingTag}
 	})
 
 	huma.Get(userGroup, "/me/bookings", handler.GetMyBookings, func(o *huma.Operation) {
 		o.Summary = "Get my bookings"
 		o.Description = "Retrieve all confirmed bookings for the current user"
+		o.Tags = []string{bookingTag}
 	})
 }
 

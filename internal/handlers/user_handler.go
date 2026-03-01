@@ -38,16 +38,19 @@ func InitUserHandler(api huma.API, usecase usecases.UserUsecase, mid middlewares
 		usecase: usecase,
 		mid:     mid,
 	}
+	userTag := "user"
 
 	huma.Post(api, "", handler.CreateUser, func(o *huma.Operation) {
 		o.Summary = "Register new user"
 		o.Description = "Register a new user with the provided details."
 		o.DefaultStatus = 200
+		o.Tags = []string{userTag}
 	})
 
 	huma.Get(api, "/me", handler.GetUser, func(o *huma.Operation) {
 		o.Summary = "Get user details"
 		o.Description = "Retrieve the user details for the current user, based on the Authorization header."
+		o.Tags = []string{userTag}
 	})
 }
 
