@@ -5,9 +5,9 @@ Backend starter for Intania Openhouse 2026 API. Built in Go with a clean layerin
 ## Quick start
 
 Prerequisites
-- Go 1.24+
+- [Go](https://go.dev/) 1.24+
 - Docker + Docker Compose (for local Postgres)
-- Air (for hot reload)
+- [Air](https://github.com/air-verse/air) (optional, for hot reload)
 
 Setup
 ```bash
