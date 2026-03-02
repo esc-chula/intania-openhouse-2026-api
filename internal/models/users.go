@@ -51,7 +51,7 @@ type StudentExtraAttributes struct {
 	SchoolName       string `json:"school_name"`
 	StudyPlan        string `json:"study_plan"`
 	Province         string `json:"province"`
-	TcasRank         string `json:"tcas_rank"`
+	TcasRank         int    `json:"tcas_rank"`
 	InterestedMajor  string `json:"interested_major"`
 	EmergencyContact string `json:"emergency_contact"`
 }
