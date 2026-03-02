@@ -1,7 +1,6 @@
 package myValidator
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"time"
@@ -11,42 +10,59 @@ import (
 )
 
 var (
-	ErrExtraAttributesInvalid = errors.New("extra attributes invalid")
+	ErrExtraAttributesRequired = errors.New("extra attributes required")
+	ErrExtraAttributesInvalid  = errors.New("extra attributes invalid")
+	ErrInvalidEventDate        = errors.New("invalid event date format, expected YYYY-MM-DD")
 )
 
 var validate = validator.New()
 
-func ValidateExtraAttributes(user *models.User) error {
-	switch user.ParticipantType {
+func ValidateExtraAttributes(participantType models.ParticipantType, fields *models.ExtraAttributesFields) (extraAttributes json.RawMessage, err error) {
+	var chosenField any
+
+	switch participantType {
 	case models.ParticipantTypeStudent:
-		var studentExtraAttributes models.StudentExtraAttributes
-		if err := validateRawMessage(user.ExtraAttributes, &studentExtraAttributes); err != nil {
-			return ErrExtraAttributesInvalid
+		if fields.StudentExtraAttributes == nil {
+			return nil, ErrExtraAttributesRequired
 		}
-		return nil
+		chosenField = fields.StudentExtraAttributes
+
 	case models.ParticipantTypeIntania:
-		var intaniaExtraAttributes models.IntaniaExtraAttributes
-		if err := validateRawMessage(user.ExtraAttributes, &intaniaExtraAttributes); err != nil {
-			return ErrExtraAttributesInvalid
+		if fields.IntaniaExtraAttributes == nil {
+			return nil, ErrExtraAttributesRequired
 		}
-		return nil
-	case models.ParticipantTypeOtherUniversityStudent:
-		var otherUniversityStudentExtraAttributes models.OtherUniversityStudentExtraAttributes
-		if err := validateRawMessage(user.ExtraAttributes, &otherUniversityStudentExtraAttributes); err != nil {
-			return ErrExtraAttributesInvalid
+		chosenField = fields.IntaniaExtraAttributes
+
+	case models.ParticipantTypeOutsideStudent:
+		if fields.OutsideStudentExtraAttributes == nil {
+			return nil, ErrExtraAttributesRequired
 		}
-		return nil
+		chosenField = fields.OutsideStudentExtraAttributes
+
+	case models.ParticipantTypeAlumni:
+		if fields.AlumniExtraAttributes == nil {
+			return nil, ErrExtraAttributesRequired
+		}
+		chosenField = fields.AlumniExtraAttributes
+
 	case models.ParticipantTypeTeacher:
-		var teacherExtraAttributes models.TeacherExtraAttributes
-		if err := validateRawMessage(user.ExtraAttributes, &teacherExtraAttributes); err != nil {
-			return ErrExtraAttributesInvalid
+		if fields.TeacherExtraAttributes == nil {
+			return nil, ErrExtraAttributesRequired
 		}
-		return nil
+		chosenField = fields.TeacherExtraAttributes
+
 	case models.ParticipantTypeOther:
-		return nil
+		return nil, nil
 	default:
-		return ErrInvalidParticipantType
+		return nil, ErrInvalidParticipantType
 	}
+
+	extraAttributes, err = json.Marshal(chosenField)
+	if err != nil {
+		return nil, err
+	}
+
+	return extraAttributes, err
 }
 
 func ValidateAttendanceDate(user *models.User) error {
@@ -58,22 +74,9 @@ func ValidateAttendanceDate(user *models.User) error {
 	return nil
 }
 
-func validateRawMessage(raw json.RawMessage, myStruct interface{}) error {
-
-	if len(raw) == 0 {
-		return errors.New("extra_attributes is required")
+func ValidateEventDate(date string) error {
+	if _, err := time.Parse("2006-01-02", date); err != nil {
+		return ErrInvalidEventDate
 	}
-
-	decoder := json.NewDecoder(bytes.NewReader(raw))
-	decoder.DisallowUnknownFields()
-
-	if err := decoder.Decode(myStruct); err != nil {
-		return err
-	}
-
-	if err := validate.Struct(myStruct); err != nil {
-		return err
-	}
-
 	return nil
 }

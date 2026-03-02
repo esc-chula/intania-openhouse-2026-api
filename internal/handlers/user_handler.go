@@ -14,16 +14,17 @@ import (
 )
 
 var (
-	ErrInvalidParticipantType = huma.Error400BadRequest("invalid participant type")
-	ErrExtraAttributesInvalid = huma.Error400BadRequest("extra attributes is invalid")
-	ErrAttendanceDateInvalid  = huma.Error400BadRequest("attendance date is invalid")
-	ErrInvalidGender          = huma.Error400BadRequest("invalid gender")
-	ErrInvalidTransportMode   = huma.Error400BadRequest("invalid transport mode")
-	ErrInvalidOriginLocation  = huma.Error400BadRequest("invalid origin location")
-	ErrEmailNotFound          = huma.Error401Unauthorized("email not found in context")
-	ErrUserNotFound           = huma.Error404NotFound("user not found")
-	ErrUserAlreadyExists      = huma.Error400BadRequest("user already exists")
-	ErrInternalServerError    = huma.Error500InternalServerError("internal server error")
+	ErrExtraAttributesRequired = huma.Error400BadRequest("extra attributes required")
+	ErrInvalidParticipantType  = huma.Error400BadRequest("invalid participant type")
+	ErrExtraAttributesInvalid  = huma.Error400BadRequest("extra attributes is invalid")
+	ErrAttendanceDateInvalid   = huma.Error400BadRequest("attendance date is invalid")
+	ErrInvalidGender           = huma.Error400BadRequest("invalid gender")
+	ErrInvalidTransportMode    = huma.Error400BadRequest("invalid transport mode")
+	ErrInvalidOriginLocation   = huma.Error400BadRequest("invalid origin location")
+	ErrEmailNotFound           = huma.Error401Unauthorized("email not found in context")
+	ErrUserNotFound            = huma.Error404NotFound("user not found")
+	ErrUserAlreadyExists       = huma.Error400BadRequest("user already exists")
+	ErrInternalServerError     = huma.Error500InternalServerError("internal server error")
 )
 
 type userHandler struct {
@@ -56,19 +57,20 @@ func InitUserHandler(api huma.API, usecase usecases.UserUsecase, mid middlewares
 // Request and Response structs
 type CreateUserRequest struct {
 	Body struct {
-		FirstName       string                 `json:"first_name" require:"true"`
-		LastName        string                 `json:"last_name" require:"true"`
-		Gender          models.Gender          `json:"gender" require:"true"`
-		PhoneNumber     string                 `json:"phone_number" require:"true"`
-		ParticipantType models.ParticipantType `json:"participant_type" require:"true"`
-		TransportMode   models.TransportMode   `json:"transport_mode" require:"true"`
-		IsFromBangkok   bool                   `json:"is_from_bangkok" require:"true"`
-		OriginLocation  models.OriginLocation  `json:"origin_location" require:"true"`
+		FirstName       string                 `json:"first_name"`
+		LastName        string                 `json:"last_name"`
+		Gender          models.Gender          `json:"gender"`
+		PhoneNumber     string                 `json:"phone_number"`
+		ParticipantType models.ParticipantType `json:"participant_type"`
+		TransportMode   models.TransportMode   `json:"transport_mode"`
+		IsFromBangkok   bool                   `json:"is_from_bangkok"`
+		OriginLocation  models.OriginLocation  `json:"origin_location"`
 
-		AttendanceDates      []string        `json:"attendance_dates" require:"true"`
-		InterestedActivities []string        `json:"interested_activities"`
-		DiscoveryChannel     []string        `json:"discovery_channel"`
-		ExtraAttributes      json.RawMessage `json:"extra_attributes"`
+		AttendanceDates      []string `json:"attendance_dates" doc:"date in format 2024-12-31"`
+		InterestedActivities []string `json:"interested_activities"`
+		DiscoveryChannel     []string `json:"discovery_channel"`
+
+		models.ExtraAttributesFields
 	}
 }
 
@@ -77,6 +79,20 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 	email, ok := ctx.Value("email").(string)
 	if !ok || email == "" {
 		return nil, ErrEmailNotFound
+	}
+
+	extraAttributes, err := myValidator.ValidateExtraAttributes(input.Body.ParticipantType, &input.Body.ExtraAttributesFields)
+	if err != nil {
+		switch err {
+		case myValidator.ErrExtraAttributesRequired:
+			return nil, ErrExtraAttributesRequired
+		case myValidator.ErrInvalidParticipantType:
+			return nil, ErrInvalidParticipantType
+		case myValidator.ErrExtraAttributesInvalid:
+			return nil, ErrExtraAttributesInvalid
+		default:
+			return nil, ErrInternalServerError
+		}
 	}
 
 	user := &models.User{
@@ -93,7 +109,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		AttendanceDates:      input.Body.AttendanceDates,
 		InterestedActivities: input.Body.InterestedActivities,
 		DiscoveryChannel:     input.Body.DiscoveryChannel,
-		ExtraAttributes:      input.Body.ExtraAttributes,
+		ExtraAttributes:      extraAttributes,
 	}
 
 	if err := myValidator.ValidateAttendanceDate(user); err != nil {
@@ -112,18 +128,6 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 			return nil, ErrInvalidOriginLocation
 		default:
 			return nil, huma.Error400BadRequest(err.Error())
-		}
-	}
-
-	err := myValidator.ValidateExtraAttributes(user)
-	if err != nil {
-		switch err {
-		case myValidator.ErrInvalidParticipantType:
-			return nil, ErrInvalidParticipantType
-		case myValidator.ErrExtraAttributesInvalid:
-			return nil, ErrExtraAttributesInvalid
-		default:
-			return nil, ErrInternalServerError
 		}
 	}
 
