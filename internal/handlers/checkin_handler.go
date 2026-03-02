@@ -33,10 +33,14 @@ func InitCheckInHandler(
 	checkInGroup.UseMiddleware(mid.WithAuthContext)
 
 	huma.Post(checkInGroup, "", handler.CheckIn, func(o *huma.Operation) {
+		errDoc, errCodes := buildErrorsDocumentation(checkInErrorList)
+
 		o.Summary = "Check-in with code"
 		o.Description = "The code should be formatted in `<type>-<uuid>` where <type> is either `W` for workshop or `B` for booth, and <uuid> is the identifier for workshop and booth"
+		o.Description += errDoc
 		o.DefaultStatus = 201
 		o.Tags = []string{checkInTag}
+		o.Errors = errCodes
 	})
 }
 
@@ -47,6 +51,8 @@ type CheckInRequest struct {
 }
 
 type CheckInResponse struct{}
+
+var checkInErrorList = []huma.StatusError{ErrEmailNotFound, ErrInvalidCode, ErrAlreadyCheckedIn, ErrInternalServerError}
 
 func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*CheckInResponse, error) {
 	email, ok := ctx.Value("email").(string)
