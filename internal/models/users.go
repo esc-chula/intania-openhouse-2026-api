@@ -2,8 +2,9 @@ package models
 
 import (
 	"encoding/json"
-	"github.com/uptrace/bun"
 	"time"
+
+	"github.com/uptrace/bun"
 )
 
 type Gender string
@@ -27,20 +28,20 @@ type User struct {
 	bun.BaseModel `bun:"table:users,alias:u"`
 
 	ID              int64           `bun:"id,pk,autoincrement" json:"id"`
-	FirstName       string          `bun:"first_name" json:"first_name"`
-	LastName        string          `bun:"last_name" json:"last_name"`
-	Gender          Gender          `bun:"gender" json:"gender"`
-	PhoneNumber     string          `bun:"phone_number" json:"phone_number"`
-	Email           string          `bun:"email" json:"email"`
-	ParticipantType ParticipantType `bun:"participant_type" json:"participant_type"`
-	TransportMode   TransportMode   `bun:"transport_mode" json:"transport_mode"`
-	IsFromBangkok   bool            `bun:"is_from_bangkok" json:"is_from_bangkok"`
-	OriginLocation  OriginLocation  `bun:"origin_location" json:"origin_location"`
+	FirstName       string          `bun:"first_name"          json:"first_name"`
+	LastName        string          `bun:"last_name"           json:"last_name"`
+	Gender          Gender          `bun:"gender"              json:"gender"`
+	PhoneNumber     string          `bun:"phone_number"        json:"phone_number"`
+	Email           string          `bun:"email"               json:"email"`
+	ParticipantType ParticipantType `bun:"participant_type"    json:"participant_type"`
+	TransportMode   TransportMode   `bun:"transport_mode"      json:"transport_mode"`
+	IsFromBangkok   bool            `bun:"is_from_bangkok"     json:"is_from_bangkok"`
+	OriginLocation  OriginLocation  `bun:"origin_location"     json:"origin_location"`
 
 	AttendanceDates      []string        `bun:"attendance_dates,type:date,array" json:"attendance_dates"` // Date in format `2024-12-31`
-	InterestedActivities []string        `bun:"interested_activities,array" json:"interested_activities"`
-	DiscoveryChannel     []string        `bun:"discovery_channel,array" json:"discovery_channel"`
-	ExtraAttributes      json.RawMessage `bun:"extra_attributes,type:jsonb" json:"extra_attributes"`
+	InterestedActivities []string        `bun:"interested_activities,array"      json:"interested_activities"`
+	DiscoveryChannel     []string        `bun:"discovery_channel,array"          json:"discovery_channel"`
+	ExtraAttributes      json.RawMessage `bun:"extra_attributes,type:jsonb"      json:"extra_attributes"`
 
 	CreatedAt time.Time `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt time.Time `bun:"updated_at,nullzero" json:"updated_at"`
@@ -66,8 +67,18 @@ type OutsideStudentExtraAttributes struct {
 	University string `json:"university"`
 }
 
+type AlumniExtraAttributes = IntaniaExtraAttributes
+
 type TeacherExtraAttributes struct {
 	SchoolName    string `json:"school_name"`
 	Province      string `json:"province"`
 	SubjectTaught string `json:"subject_taught"`
+}
+
+type ExtraAttributesFields struct {
+	StudentExtraAttributes        *StudentExtraAttributes        `json:"student_extra_attributes"         required:"false"`
+	IntaniaExtraAttributes        *IntaniaExtraAttributes        `json:"intania_extra_attributes"         required:"false"`
+	OutsideStudentExtraAttributes *OutsideStudentExtraAttributes `json:"outside_student_extra_attributes" required:"false"`
+	AlumniExtraAttributes         *AlumniExtraAttributes         `json:"alumni_extra_attributes"          required:"false"`
+	TeacherExtraAttributes        *TeacherExtraAttributes        `json:"teacher_extra_attributes"         required:"false"`
 }
