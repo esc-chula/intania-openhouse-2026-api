@@ -7,8 +7,9 @@
   ],
   "participant_types": [
     {"label": "นักเรียน/ผู้ที่สนใจศึกษาต่อ", "value": "student"},
-    {"label": "นิสิตปัจจุบัน/นิสิตเก่าวิศวะจุฬาฯ", "value": "intania"},
-    {"label": "นิสิตจากมหาลัยอื่น", "value": "other_university_student"},
+    {"label": "นิสิตปัจจุบันวิศวะจุฬาฯ", "value": "intania"},
+    {"label": "นักศึกษาจากมหาวิทยาลัยอื่น/นิสิตจุฬาฯ คณะอื่น", "value": "outside_student"},
+    {"label": "ศิษย์เก่าวิศวะจุฬาฯ", "value": "alumni"},
     {"label": "ครู", "value": "teacher"},
     {"label": "ผู้ปกครอง/บุคคลภายนอก", "value": "other"}
   ],
@@ -150,5 +151,9 @@
     {"label": "จังหวัดอุตรดิตถ์", "value": "uttaradit"},
     {"label": "จังหวัดยะลา", "value": "yala"},
     {"label": "จังหวัดยโสธร", "value": "yasothon"}
+  ],
+  "workshop_categories": [
+    {"label": "Department", "value": "Department"},
+    {"label": "Club", "value": "Club"}
   ]
 }
