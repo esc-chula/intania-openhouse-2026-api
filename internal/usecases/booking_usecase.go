@@ -62,6 +62,10 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, use
 	case models.ParticipantTypeAlumni, models.ParticipantTypeTeacher, models.ParticipantTypeOther:
 		return ErrParticipantTypeNotAllowed
 	}
+	// check for club's workshop
+	if workshop.Category == models.CategoryClub && user.ParticipantType != models.ParticipantTypeStudent {
+		return ErrParticipantTypeNotAllowed
+	}
 
 	// Get user's existing confirmed bookings for the same date (with time info)
 	existingBookings, err := u.bookingRepo.GetConfirmedBookingsWithWorkshop(ctx, userID, workshop.EventDate)
