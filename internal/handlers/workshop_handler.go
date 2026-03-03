@@ -31,8 +31,6 @@ func InitWorkshopHandler(api huma.API, usecase usecases.WorkshopUsecase, mid mid
 		mid:     mid,
 	}
 
-	api.UseMiddleware(mid.WithAuthContext)
-
 	huma.Get(api, "/{id}", handler.GetWorkshop, func(o *huma.Operation) {
 		o.Summary = "Get workshop details"
 		o.Description = "Retrieve workshop details by ID path parameter"

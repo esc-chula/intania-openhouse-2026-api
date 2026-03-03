@@ -37,8 +37,6 @@ func InitBookingHandler(
 		mid:            mid,
 	}
 
-	workshopGroup.UseMiddleware(mid.WithAuthContext)
-
 	huma.Post(workshopGroup, "/{workshop_id}/book", handler.BookWorkshop, func(o *huma.Operation) {
 		o.Summary = "Book a workshop"
 		o.Description = "Create a booking for a workshop. Prevents double-booking and checks seat availability."
@@ -50,8 +48,6 @@ func InitBookingHandler(
 		o.Description = "Cancel an existing workshop booking"
 		o.DefaultStatus = 204
 	})
-
-	userGroup.UseMiddleware(mid.WithAuthContext)
 
 	huma.Get(userGroup, "/me/bookings", handler.GetMyBookings, func(o *huma.Operation) {
 		o.Summary = "Get my bookings"

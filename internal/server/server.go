@@ -79,6 +79,10 @@ func InitServer(cfg config.Config) error {
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
 	workshopGroup := huma.NewGroup(api, "/workshops")
+
+	userGroup.UseMiddleware(mid.WithAuthContext)
+	workshopGroup.UseMiddleware(mid.WithAuthContext)
+
 	handlers.InitUserHandler(userGroup, userUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
 	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
