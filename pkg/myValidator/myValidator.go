@@ -12,6 +12,7 @@ import (
 
 var (
 	ErrExtraAttributesInvalid = errors.New("extra attributes invalid")
+	ErrInvalidEventDate       = errors.New("invalid event date format, expected YYYY-MM-DD")
 )
 
 var validate = validator.New()
@@ -30,9 +31,15 @@ func ValidateExtraAttributes(user *models.User) error {
 			return ErrExtraAttributesInvalid
 		}
 		return nil
-	case models.ParticipantTypeOtherUniversityStudent:
-		var otherUniversityStudentExtraAttributes models.OtherUniversityStudentExtraAttributes
-		if err := validateRawMessage(user.ExtraAttributes, &otherUniversityStudentExtraAttributes); err != nil {
+	case models.ParticipantTypeOutsideStudent:
+		var outsideStudentExtraAttributes models.OutsideStudentExtraAttributes
+		if err := validateRawMessage(user.ExtraAttributes, &outsideStudentExtraAttributes); err != nil {
+			return ErrExtraAttributesInvalid
+		}
+		return nil
+	case models.ParticipantTypeAlumni:
+		var alumniExtraAttributes models.IntaniaExtraAttributes
+		if err := validateRawMessage(user.ExtraAttributes, &alumniExtraAttributes); err != nil {
 			return ErrExtraAttributesInvalid
 		}
 		return nil
@@ -54,6 +61,13 @@ func ValidateAttendanceDate(user *models.User) error {
 		if _, err := time.Parse("2006-01-02", date); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func ValidateEventDate(date string) error {
+	if _, err := time.Parse("2006-01-02", date); err != nil {
+		return ErrInvalidEventDate
 	}
 	return nil
 }

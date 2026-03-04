@@ -39,8 +39,6 @@ func InitUserHandler(api huma.API, usecase usecases.UserUsecase, mid middlewares
 		mid:     mid,
 	}
 
-	api.UseMiddleware(mid.WithAuthContext)
-
 	huma.Post(api, "", handler.CreateUser, func(o *huma.Operation) {
 		o.Summary = "Register new user"
 		o.Description = "Register a new user with the provided details."

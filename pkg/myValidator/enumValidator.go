@@ -12,10 +12,11 @@ import (
 var enumsJSON []byte
 
 var (
-	ErrInvalidGender          = errors.New("invalid gender")
-	ErrInvalidParticipantType = errors.New("invalid participant type")
-	ErrInvalidTransportMode   = errors.New("invalid transport mode")
-	ErrInvalidOriginLocation  = errors.New("invalid origin location")
+	ErrInvalidGender           = errors.New("invalid gender")
+	ErrInvalidParticipantType  = errors.New("invalid participant type")
+	ErrInvalidTransportMode    = errors.New("invalid transport mode")
+	ErrInvalidOriginLocation   = errors.New("invalid origin location")
+	ErrInvalidWorkshopCategory = errors.New("invalid workshop category")
 )
 
 type EnumOption struct {
@@ -24,18 +25,20 @@ type EnumOption struct {
 }
 
 type Enums struct {
-	Genders          []EnumOption `json:"genders"`
-	ParticipantTypes []EnumOption `json:"participant_types"`
-	TransportModes   []EnumOption `json:"transport_modes"`
-	OriginLocations  []EnumOption `json:"origin_locations"`
+	Genders            []EnumOption `json:"genders"`
+	ParticipantTypes   []EnumOption `json:"participant_types"`
+	TransportModes     []EnumOption `json:"transport_modes"`
+	OriginLocations    []EnumOption `json:"origin_locations"`
+	WorkshopCategories []EnumOption `json:"workshop_categories"`
 }
 
 var (
-	validGenders          map[string]bool
-	validParticipantTypes map[string]bool
-	validTransportModes   map[string]bool
-	validOriginLocations  map[string]bool
-	loadedEnums           Enums
+	validGenders            map[string]bool
+	validParticipantTypes   map[string]bool
+	validTransportModes     map[string]bool
+	validOriginLocations    map[string]bool
+	validWorkshopCategories map[string]bool
+	loadedEnums             Enums
 )
 
 func init() {
@@ -46,6 +49,7 @@ func init() {
 	validParticipantTypes = buildValidMap(loadedEnums.ParticipantTypes)
 	validTransportModes = buildValidMap(loadedEnums.TransportModes)
 	validOriginLocations = buildValidMap(loadedEnums.OriginLocations)
+	validWorkshopCategories = buildValidMap(loadedEnums.WorkshopCategories)
 }
 
 func buildValidMap(options []EnumOption) map[string]bool {
@@ -67,6 +71,13 @@ func ValidateUserEnums(user *models.User) error {
 	}
 	if !validOriginLocations[string(user.OriginLocation)] {
 		return ErrInvalidOriginLocation
+	}
+	return nil
+}
+
+func ValidateWorkshopCategory(category string) error {
+	if !validWorkshopCategories[category] {
+		return ErrInvalidWorkshopCategory
 	}
 	return nil
 }
