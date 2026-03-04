@@ -41,8 +41,8 @@ type Status string
 const (
 	StatusConfirmed Status = "Confirmed"
 	StatusCancelled Status = "Cancelled"
-	StatusAttended  Status = "attended"
-	StatusAbsent    Status = "absent"
+	StatusAttended  Status = "Attended"
+	StatusAbsent    Status = "Absent"
 )
 
 type Booking struct {
