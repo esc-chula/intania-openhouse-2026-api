@@ -36,51 +36,61 @@ func NewCheckInUsecase(
 	}
 }
 
+const (
+	PrefixWorkshop = "W-"
+	PrefixBooth    = "B-"
+	PrefixLength   = 2
+)
+
 func (u *checkInUsecaseImpl) CheckIn(ctx context.Context, email string, code string) error {
-	prefixCode := code[0:2]
-	checkInCode := code[2:]
+	if len(code) <= PrefixLength {
+		return ErrInvalidCodeFormat
+	}
+
+	prefixCode := code[0:PrefixLength]
+	checkInCode := code[PrefixLength:]
 
 	if _, err := uuid.Parse(checkInCode); err != nil {
 		return ErrInvalidCodeFormat
 	}
 
 	switch prefixCode {
-	case "W-":
-		bookingID, bookingStatus, err := u.bookingRepo.GetBookingIDAndStatus(ctx, email, checkInCode)
-		if err != nil {
-			return err
-		}
-
-		if bookingStatus != models.StatusConfirmed {
-			if bookingStatus == models.StatusAttended {
-				return ErrAlreadyAttended
-			}
-			return repositories.ErrInvalidBookingStatus
-		}
-
-		err = u.bookingRepo.AttendBooking(ctx, bookingID)
-		if err != nil {
-			return err
-		}
-	case "B-":
-		user, err := u.userRepo.GetUserByEmail(ctx, email, []string{"id"})
-		if err != nil {
-			return err
-		}
-		userID := user.ID
-
-		boothID, err := u.boothRepo.GetBoothIDFromCheckInCode(ctx, checkInCode)
-		if err != nil {
-			return err
-		}
-
-		err = u.boothRepo.CreateBoothCheckIn(ctx, userID, boothID)
-		if err != nil {
-			return err
-		}
-
+	case PrefixWorkshop:
+		return u.handleWorkshopCheckIn(ctx, email, checkInCode)
+	case PrefixBooth:
+		return u.handleBoothCheckIn(ctx, email, checkInCode)
 	default:
 		return ErrInvalidCodeFormat
 	}
-	return nil
+}
+
+func (u *checkInUsecaseImpl) handleWorkshopCheckIn(ctx context.Context, email string, checkInCode string) error {
+	bookingID, bookingStatus, err := u.bookingRepo.GetBookingIDAndStatus(ctx, email, checkInCode)
+	if err != nil {
+		return err
+	}
+
+	if bookingStatus != models.StatusConfirmed {
+		if bookingStatus == models.StatusAttended {
+			return ErrAlreadyAttended
+		}
+		return repositories.ErrInvalidBookingStatus
+	}
+
+	return u.bookingRepo.AttendBooking(ctx, bookingID)
+}
+
+func (u *checkInUsecaseImpl) handleBoothCheckIn(ctx context.Context, email string, checkInCode string) error {
+	user, err := u.userRepo.GetUserByEmail(ctx, email, []string{"id"})
+	if err != nil {
+		return err
+	}
+	userID := user.ID
+
+	boothID, err := u.boothRepo.GetBoothIDFromCheckInCode(ctx, checkInCode)
+	if err != nil {
+		return err
+	}
+
+	return u.boothRepo.CreateBoothCheckIn(ctx, userID, boothID)
 }
