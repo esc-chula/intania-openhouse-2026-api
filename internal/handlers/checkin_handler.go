@@ -73,6 +73,8 @@ func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*C
 			return nil, ErrInvalidCode
 		case repositories.ErrInvalidCheckInCode:
 			return nil, ErrInvalidCode
+		case repositories.ErrUserNotFound:
+			return nil, ErrUserNotFound
 		default:
 			return nil, ErrInternalServerError
 		}
