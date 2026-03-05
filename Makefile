@@ -11,6 +11,8 @@ migrate-up:
 migrate-down:
 migrate-reset:
 migrate-create:
+seed:
+	go run . --env-file $(ENV_FILE) seed
 
 up:
 	air -c .air.toml
