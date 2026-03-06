@@ -27,6 +27,7 @@ type BookingRepo interface {
 	UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error
 	GetBookingIDAndStatus(ctx context.Context, email string, checkInCode string) (int64, models.Status, error)
 	AttendBooking(ctx context.Context, bookingID int64) error
+	GetAttendedWorkshopsForUser(ctx context.Context, userID int64) ([]models.StampItem, error)
 }
 
 type bookingRepoImpl struct {
@@ -170,4 +171,30 @@ func (r *bookingRepoImpl) GetBookingIDAndStatus(ctx context.Context, email strin
 	})
 
 	return booking.ID, booking.Status, err
+}
+
+func (r *bookingRepoImpl) GetAttendedWorkshopsForUser(ctx context.Context, userID int64) ([]models.StampItem, error) {
+	stamps := make([]models.StampItem, 0)
+	err := r.exec.Run(ctx, func(idb bun.IDB) error {
+		return idb.NewSelect().
+			TableExpr("bookings AS bk").
+			ColumnExpr("ws.id AS id").
+			ColumnExpr("ws.name AS name").
+			ColumnExpr("bk.checked_in_at AS checked_in_at").
+			Join("JOIN workshops AS ws ON ws.id = bk.workshop_id").
+			Where("bk.user_id = ?", userID).
+			Where("bk.status = ?", models.StatusAttended).
+			Scan(ctx, &stamps)
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return stamps, nil
+		}
+		return nil, err
+	}
+	// Set type for all items
+	for i := range stamps {
+		stamps[i].Type = models.StampTypeWorkshop
+	}
+	return stamps, nil
 }
