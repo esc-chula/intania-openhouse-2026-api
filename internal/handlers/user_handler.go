@@ -25,6 +25,7 @@ var (
 	ErrUserNotFound            = huma.Error404NotFound("user not found")
 	ErrUserAlreadyExists       = huma.Error400BadRequest("user already exists")
 	ErrInternalServerError     = huma.Error500InternalServerError("internal server error")
+	ErrProfileInfoNotFound     = huma.Error404NotFound("google profile info is not found")
 )
 
 type userHandler struct {
@@ -166,6 +167,8 @@ type GetUserResponseBody struct {
 	InterestedActivities []string               `json:"interested_activities,omitempty"`
 	DiscoveryChannel     []string               `json:"discovery_channel,omitempty"`
 	ExtraAttributes      json.RawMessage        `json:"extra_attributes,omitempty"`
+	DisplayName          string                 `json:"google_display_name,omitempty"`
+	PhotoURL             string                 `json:"google_photo_url,omitempty"`
 }
 
 func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetUserResponse, error) {
@@ -180,6 +183,16 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 	// default
 	if len(fields) == 0 {
 		fields = []string{"email"}
+	}
+
+	// Retrieve firebase claims info
+	display_name, ok := ctx.Value("display_name").(string)
+	if !ok || display_name == "" {
+		return nil, ErrProfileInfoNotFound
+	}
+	photo_url, ok := ctx.Value("photo_url").(string)
+	if !ok || photo_url == "" {
+		return nil, ErrProfileInfoNotFound
 	}
 
 	user, err := h.usecase.GetUser(ctx, email, fields)
@@ -206,6 +219,8 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 			InterestedActivities: user.InterestedActivities,
 			DiscoveryChannel:     user.DiscoveryChannel,
 			ExtraAttributes:      user.ExtraAttributes,
+			DisplayName:          display_name,
+			PhotoURL:             photo_url,
 		},
 	}, nil
 }

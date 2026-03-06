@@ -15,10 +15,10 @@ type TokenInfo struct {
 
 func (t *TokenInfo) ToMapClaims() jwt.MapClaims {
 	return jwt.MapClaims{
-		"uid":       t.UserId,
-		"email":     t.Email,
-		"name":      t.DisplayName,
-		"photo_url": t.PhotoURL,
+		"uid":          t.UserId,
+		"email":        t.Email,
+		"display_name": t.DisplayName,
+		"photo_url":    t.PhotoURL,
 	}
 }
 
