@@ -24,6 +24,7 @@ type BookingRepo interface {
 	GetConfirmedBookingsWithWorkshop(ctx context.Context, userID int64, eventDate string) ([]models.BookingWithTime, error)
 	CancelBooking(ctx context.Context, userID int64, workshopID int64) error
 	GetUserBookings(ctx context.Context, userID int64) ([]*models.Booking, error)
+	GetUserBookingsWithWorkshop(ctx context.Context, userID int64) ([]models.BookingWithWorkshop, error)
 	UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error
 	GetBookingIDAndStatus(ctx context.Context, email string, checkInCode string) (int64, models.Status, error)
 	AttendBooking(ctx context.Context, bookingID int64) error
@@ -104,6 +105,35 @@ func (r *bookingRepoImpl) GetUserBookings(ctx context.Context, userID int64) ([]
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
+		}
+		return nil, err
+	}
+	return bookings, nil
+}
+
+func (r *bookingRepoImpl) GetUserBookingsWithWorkshop(ctx context.Context, userID int64) ([]models.BookingWithWorkshop, error) {
+	bookings := make([]models.BookingWithWorkshop, 0)
+	err := r.exec.Run(ctx, func(idb bun.IDB) error {
+		return idb.NewSelect().
+			TableExpr("bookings AS bk").
+			ColumnExpr("bk.id").
+			ColumnExpr("bk.workshop_id").
+			ColumnExpr("bk.status").
+			ColumnExpr("bk.created_at").
+			ColumnExpr("bk.checked_in_at").
+			ColumnExpr("ws.name AS workshop_name").
+			ColumnExpr("ws.event_date").
+			ColumnExpr("ws.start_time").
+			ColumnExpr("ws.end_time").
+			ColumnExpr("ws.location").
+			Join("JOIN workshops AS ws ON ws.id = bk.workshop_id").
+			Where("bk.user_id = ?", userID).
+			Where("bk.status != ?", models.StatusCancelled).
+			Scan(ctx, &bookings)
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return bookings, nil
 		}
 		return nil, err
 	}

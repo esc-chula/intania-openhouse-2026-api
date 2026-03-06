@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	"errors"
+	"sort"
 	"time"
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
@@ -19,7 +20,7 @@ var (
 type BookingUsecase interface {
 	BookWorkshop(ctx context.Context, userID int64, userEmail string, workshopID int64) error
 	CancelBooking(ctx context.Context, userID int64, workshopID int64) error
-	GetMyBookings(ctx context.Context, userID int64) ([]*models.Booking, error)
+	GetMyBookings(ctx context.Context, userID int64) ([]models.BookingWithWorkshop, error)
 	UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error
 }
 
@@ -105,8 +106,35 @@ func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, userID int64, wo
 	})
 }
 
-func (u *bookingUsecaseImpl) GetMyBookings(ctx context.Context, userID int64) ([]*models.Booking, error) {
-	return u.bookingRepo.GetUserBookings(ctx, userID)
+func (u *bookingUsecaseImpl) GetMyBookings(ctx context.Context, userID int64) ([]models.BookingWithWorkshop, error) {
+	bookings, err := u.bookingRepo.GetUserBookingsWithWorkshop(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	statusPriority := map[models.Status]int{
+		models.StatusConfirmed: 0,
+		models.StatusAttended:  1,
+		models.StatusAbsent:    2,
+	}
+
+	// Sort by status priority, then by event_date and start_time
+	sort.Slice(bookings, func(i, j int) bool {
+		// First sort by status priority
+		pi := statusPriority[bookings[i].Status]
+		pj := statusPriority[bookings[j].Status]
+		if pi != pj {
+			return pi < pj
+		}
+		// Then sort by event_date
+		if bookings[i].EventDate != bookings[j].EventDate {
+			return bookings[i].EventDate < bookings[j].EventDate
+		}
+		// Then sort by start_time
+		return bookings[i].StartTime.Before(bookings[j].StartTime)
+	})
+
+	return bookings, nil
 }
 
 func (u *bookingUsecaseImpl) UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error {

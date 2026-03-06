@@ -54,7 +54,7 @@ func InitBookingHandler(
 
 	huma.Get(userGroup, "/me/bookings", handler.GetMyBookings, func(o *huma.Operation) {
 		o.Summary = "Get my bookings"
-		o.Description = "Retrieve all confirmed bookings for the current user"
+		o.Description = "Retrieve all bookings for the current user with workshop details. Sorted by status (Confirmed -> Attended -> Absent) then by date."
 		o.Tags = []string{bookingTag}
 	})
 }
@@ -135,10 +135,20 @@ type GetMyBookingsResponseBody struct {
 }
 
 type BookingItem struct {
-	ID         int64         `json:"id"`
-	WorkshopID int64         `json:"workshop_id"`
-	Status     models.Status `json:"status"`
-	CreatedAt  string        `json:"created_at"`
+	ID          int64               `json:"id"`
+	WorkshopID  int64               `json:"workshop_id"`
+	Status      models.Status       `json:"status"`
+	CreatedAt   string              `json:"created_at"`
+	CheckedInAt *string             `json:"checked_in_at,omitempty"`
+	Workshop    BookingWorkshopInfo `json:"workshop"`
+}
+
+type BookingWorkshopInfo struct {
+	Name      string `json:"name"`
+	EventDate string `json:"event_date"`
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
+	Location  string `json:"location"`
 }
 
 func (h *bookingHandler) GetMyBookings(ctx context.Context, input *GetMyBookingsRequest) (*GetMyBookingsResponse, error) {
@@ -154,12 +164,24 @@ func (h *bookingHandler) GetMyBookings(ctx context.Context, input *GetMyBookings
 
 	items := make([]BookingItem, 0, len(bookings))
 	for _, b := range bookings {
-		items = append(items, BookingItem{
+		item := BookingItem{
 			ID:         b.ID,
 			WorkshopID: b.WorkshopID,
 			Status:     b.Status,
 			CreatedAt:  b.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		})
+			Workshop: BookingWorkshopInfo{
+				Name:      b.WorkshopName,
+				EventDate: b.EventDate,
+				StartTime: b.StartTime.Format("15:04"),
+				EndTime:   b.EndTime.Format("15:04"),
+				Location:  b.Location,
+			},
+		}
+		if b.CheckedInAt != nil {
+			checkedInAt := b.CheckedInAt.Format("2006-01-02T15:04:05Z07:00")
+			item.CheckedInAt = &checkedInAt
+		}
+		items = append(items, item)
 	}
 
 	return &GetMyBookingsResponse{
