@@ -69,7 +69,7 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, use
 	}
 
 	// Get user's existing confirmed bookings for the same date (with time info)
-	existingBookings, err := u.bookingRepo.GetConfirmedBookingsWithWorkshop(ctx, userID, workshop.EventDate)
+	existingBookings, err := u.bookingRepo.GetUserBookings(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, use
 	targetStart := workshop.StartTime
 	targetEnd := workshop.EndTime
 	for _, b := range existingBookings {
-		if targetStart.Before(b.EndTime) && targetEnd.After(b.StartTime) {
+		if targetStart.Before(b.EndTime) && targetEnd.After(b.StartTime) && workshop.EventDate == b.EventDate && b.Status == models.StatusConfirmed {
 			return ErrTimeConflict
 		}
 	}
@@ -107,7 +107,7 @@ func (u *bookingUsecaseImpl) CancelBooking(ctx context.Context, userID int64, wo
 }
 
 func (u *bookingUsecaseImpl) GetMyBookings(ctx context.Context, userID int64) ([]models.BookingWithWorkshop, error) {
-	bookings, err := u.bookingRepo.GetUserBookingsWithWorkshop(ctx, userID)
+	bookings, err := u.bookingRepo.GetUserBookings(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
