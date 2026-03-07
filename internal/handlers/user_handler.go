@@ -25,19 +25,22 @@ var (
 	ErrUserNotFound            = huma.Error404NotFound("user not found")
 	ErrUserAlreadyExists       = huma.Error400BadRequest("user already exists")
 	ErrInternalServerError     = huma.Error500InternalServerError("internal server error")
+	ErrProfileInfoNotFound     = huma.Error404NotFound("google profile info is not found")
 )
 
 type userHandler struct {
-	api     huma.API
-	usecase usecases.UserUsecase
-	mid     middlewares.Middleware
+	api          huma.API
+	usecase      usecases.UserUsecase
+	stampUsecase usecases.StampUsecase
+	mid          middlewares.Middleware
 }
 
-func InitUserHandler(api huma.API, usecase usecases.UserUsecase, mid middlewares.Middleware) {
+func InitUserHandler(api huma.API, usecase usecases.UserUsecase, stampUsecase usecases.StampUsecase, mid middlewares.Middleware) {
 	handler := &userHandler{
-		api:     api,
-		usecase: usecase,
-		mid:     mid,
+		api:          api,
+		usecase:      usecase,
+		stampUsecase: stampUsecase,
+		mid:          mid,
 	}
 	userTag := "user"
 
@@ -51,6 +54,12 @@ func InitUserHandler(api huma.API, usecase usecases.UserUsecase, mid middlewares
 	huma.Get(api, "/me", handler.GetUser, func(o *huma.Operation) {
 		o.Summary = "Get user details"
 		o.Description = "Retrieve the user details for the current user, based on the Authorization header."
+		o.Tags = []string{userTag}
+	})
+
+	huma.Get(api, "/me/stamps", handler.GetUserStamps, func(o *huma.Operation) {
+		o.Summary = "Get user stamps"
+		o.Description = "Retrieve user stamps and checked in details for booth and workshop."
 		o.Tags = []string{userTag}
 	})
 }
@@ -166,6 +175,8 @@ type GetUserResponseBody struct {
 	InterestedActivities []string               `json:"interested_activities,omitempty"`
 	DiscoveryChannel     []string               `json:"discovery_channel,omitempty"`
 	ExtraAttributes      json.RawMessage        `json:"extra_attributes,omitempty"`
+	DisplayName          string                 `json:"google_display_name,omitempty"`
+	PhotoURL             string                 `json:"google_photo_url,omitempty"`
 }
 
 func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetUserResponse, error) {
@@ -180,6 +191,16 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 	// default
 	if len(fields) == 0 {
 		fields = []string{"email"}
+	}
+
+	// Retrieve firebase claims info
+	display_name, ok := ctx.Value("display_name").(string)
+	if !ok || display_name == "" {
+		return nil, ErrProfileInfoNotFound
+	}
+	photo_url, ok := ctx.Value("photo_url").(string)
+	if !ok || photo_url == "" {
+		return nil, ErrProfileInfoNotFound
 	}
 
 	user, err := h.usecase.GetUser(ctx, email, fields)
@@ -206,6 +227,63 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 			InterestedActivities: user.InterestedActivities,
 			DiscoveryChannel:     user.DiscoveryChannel,
 			ExtraAttributes:      user.ExtraAttributes,
+			DisplayName:          display_name,
+			PhotoURL:             photo_url,
+		},
+	}, nil
+}
+
+type GetUserStampsRequest struct{}
+
+type GetUserStampsResponse struct {
+	Body GetUserStampsResponseBody `json:"body"`
+}
+
+type GetUserStampsResponseBody struct {
+	TotalCount int64           `json:"total_count"`
+	Stamps     []StampItemBody `json:"stamps"`
+}
+
+type StampItemBody struct {
+	ID          int64  `json:"id"`
+	Type        string `json:"type"`
+	Name        string `json:"name"`
+	CheckedInAt string `json:"checked_in_at"`
+}
+
+func (h *userHandler) GetUserStamps(ctx context.Context, input *GetUserStampsRequest) (*GetUserStampsResponse, error) {
+	email, ok := ctx.Value("email").(string)
+	if !ok || email == "" {
+		return nil, ErrEmailNotFound
+	}
+
+	user, err := h.usecase.GetUser(ctx, email, []string{"id"})
+	if err != nil {
+		if err == repositories.ErrUserNotFound {
+			return nil, ErrUserNotFound
+		}
+		return nil, ErrInternalServerError
+	}
+
+	stamps, err := h.stampUsecase.GetUserStamps(ctx, user.ID)
+	if err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	items := make([]StampItemBody, 0, len(stamps.Stamps))
+	for _, s := range stamps.Stamps {
+		items = append(items, StampItemBody{
+			ID:          s.ID,
+			Type:        string(s.Type),
+			Name:        s.Name,
+			CheckedInAt: s.CheckedInAt.Format("2006-01-02T15:04:05Z07:00"),
+		})
+	}
+
+	return &GetUserStampsResponse{
+		Body: GetUserStampsResponseBody{
+			TotalCount: stamps.TotalCount,
+			Stamps:     items,
 		},
 	}, nil
 }

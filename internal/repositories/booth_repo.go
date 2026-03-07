@@ -20,6 +20,7 @@ var (
 type BoothRepo interface {
 	GetBoothIDFromCheckInCode(ctx context.Context, checkInCode string) (int64, error)
 	CreateBoothCheckIn(ctx context.Context, userID int64, boothID int64) error
+	GetBoothCheckInsForUser(ctx context.Context, userID int64) ([]models.StampItem, error)
 }
 
 type boothRepoImpl struct {
@@ -69,4 +70,29 @@ func (r *boothRepoImpl) CreateBoothCheckIn(ctx context.Context, userID int64, bo
 
 		return nil
 	})
+}
+
+func (r *boothRepoImpl) GetBoothCheckInsForUser(ctx context.Context, userID int64) ([]models.StampItem, error) {
+	stamps := make([]models.StampItem, 0)
+	err := r.exec.Run(ctx, func(idb bun.IDB) error {
+		return idb.NewSelect().
+			TableExpr("booth_checkins AS btck").
+			ColumnExpr("bt.id AS id").
+			ColumnExpr("bt.name AS name").
+			ColumnExpr("btck.checked_in_at AS checked_in_at").
+			Join("JOIN booths AS bt ON bt.id = btck.booth_id").
+			Where("btck.user_id = ?", userID).
+			Scan(ctx, &stamps)
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return stamps, nil
+		}
+		return nil, err
+	}
+	// Set type for all items
+	for i := range stamps {
+		stamps[i].Type = models.StampTypeBooth
+	}
+	return stamps, nil
 }
