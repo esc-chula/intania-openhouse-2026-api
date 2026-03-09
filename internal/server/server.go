@@ -68,6 +68,7 @@ func InitServer(cfg config.Config) error {
 	workshopRepo := repositories.NewWorkshopRepo(db)
 	bookingRepo := repositories.NewBookingRepo(db)
 	boothRepo := repositories.NewBoothRepo(db)
+	activityRepo := repositories.NewActivityRepo(db)
 
 	// Create Transactioner
 	transactioner := baserepo.NewTransactioner(db)
@@ -77,20 +78,24 @@ func InitServer(cfg config.Config) error {
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
+	activityUsecase := usecases.NewActivityUsecase(activityRepo)
 
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
 	workshopGroup := huma.NewGroup(api, "/workshops")
 	checkInGroup := huma.NewGroup(api, "/check-in")
+	activityGroup := huma.NewGroup(api, "/activities")
 
 	userGroup.UseMiddleware(mid.WithAuthContext)
 	workshopGroup.UseMiddleware(mid.WithAuthContext)
 	checkInGroup.UseMiddleware(mid.WithAuthContext)
+	activityGroup.UseMiddleware(mid.WithAuthContext)
 
 	handlers.InitUserHandler(userGroup, userUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
 	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
 	handlers.InitCheckInHandler(checkInGroup, checkInUsecase, mid)
+	handlers.InitActivityHandler(activityGroup, activityUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)

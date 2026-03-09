@@ -34,7 +34,7 @@ var RootCmd = &cobra.Command{
 
 func init() {
 	RootCmd.PersistentFlags().String("env-file", "", "environment file")
-	RootCmd.AddCommand(serveCmd, migrateCmd)
+	RootCmd.AddCommand(serveCmd, migrateCmd, seedCmd)
 }
 
 func setConfigToCmd(cmd *cobra.Command, cfg config.Config) {
