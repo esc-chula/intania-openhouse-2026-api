@@ -11,7 +11,7 @@ const (
 )
 
 type StampPoster struct {
-	ID         int64     `bun:"id,pk,autoincrement"`
+	ID         int64     `bun:"id,pk,autoincrement" json:"id"`
 	UserID     int64     `bun:"user_id"`
 	Type       StampType `bun:"stamp_type"`
 	IsRedeemed bool      `bun:"is_redeemed"`
@@ -19,7 +19,7 @@ type StampPoster struct {
 
 type StampItem struct {
 	ID          int64     `bun:"id"`
-	Type        StampType `bun:"-"`
+	Type        StampType `bun:"type"`
 	Name        string    `bun:"name"`
 	CheckedInAt time.Time `bun:"checked_in_at"`
 }

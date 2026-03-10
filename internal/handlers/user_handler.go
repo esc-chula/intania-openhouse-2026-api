@@ -240,8 +240,13 @@ type GetUserStampsResponse struct {
 }
 
 type GetUserStampsResponseBody struct {
-	TotalCount int64           `json:"total_count"`
-	Stamps     []StampItemBody `json:"stamps"`
+	TotalCount           int64           `json:"total_count"`
+	DepartmentStampCount int64           `json:"department_stamp_count"`
+	ClubStampCount       int64           `json:"club_stamp_count"`
+	ExhibitionStampCount int64           `json:"exhibition_stamp_count"`
+	DepartmentStamps     []StampItemBody `json:"department_stamps"`
+	ClubStamps           []StampItemBody `json:"club_stamps"`
+	ExhibitionStamps     []StampItemBody `json:"exhibition_stamps"`
 }
 
 type StampItemBody struct {
@@ -270,20 +275,35 @@ func (h *userHandler) GetUserStamps(ctx context.Context, input *GetUserStampsReq
 		return nil, ErrInternalServerError
 	}
 
-	items := make([]StampItemBody, 0, len(stamps.Stamps))
+	departmentStamps := make([]StampItemBody, 0, len(stamps.Stamps))
+	clubStamps := make([]StampItemBody, 0, len(stamps.Stamps))
+	exhibitionStamps := make([]StampItemBody, 0, len(stamps.Stamps))
 	for _, s := range stamps.Stamps {
-		items = append(items, StampItemBody{
+		item := StampItemBody{
 			ID:          s.ID,
 			Type:        string(s.Type),
 			Name:        s.Name,
 			CheckedInAt: s.CheckedInAt.Format("2006-01-02T15:04:05Z07:00"),
-		})
+		}
+		switch s.Type {
+		case models.StampTypeDepartment:
+			departmentStamps = append(departmentStamps, item)
+		case models.StampTypeClub:
+			clubStamps = append(clubStamps, item)
+		case models.StampTypeExhibition:
+			exhibitionStamps = append(exhibitionStamps, item)
+		}
 	}
 
 	return &GetUserStampsResponse{
 		Body: GetUserStampsResponseBody{
-			TotalCount: stamps.TotalCount,
-			Stamps:     items,
+			TotalCount:           stamps.TotalCount,
+			DepartmentStampCount: int64(len(departmentStamps)),
+			ClubStampCount:       int64(len(clubStamps)),
+			ExhibitionStampCount: int64(len(exhibitionStamps)),
+			DepartmentStamps:     departmentStamps,
+			ClubStamps:           clubStamps,
+			ExhibitionStamps:     exhibitionStamps,
 		},
 	}, nil
 }
