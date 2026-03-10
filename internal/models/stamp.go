@@ -5,9 +5,17 @@ import "time"
 type StampType string
 
 const (
-	StampTypeWorkshop StampType = "workshop"
-	StampTypeBooth    StampType = "booth"
+	StampTypeDepartment StampType = "Department"
+	StampTypeClub       StampType = "Club"
+	StampTypeExhibition StampType = "Exhibition"
 )
+
+type StampPoster struct {
+	ID         int64     `bun:"id,pk,autoincrement"`
+	UserID     int64     `bun:"user_id"`
+	Type       StampType `bun:"stamp_type"`
+	IsRedeemed bool      `bun:"is_redeemed"`
+}
 
 type StampItem struct {
 	ID          int64     `bun:"id"`

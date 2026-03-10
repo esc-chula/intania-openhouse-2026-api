@@ -64,7 +64,7 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, use
 		return ErrParticipantTypeNotAllowed
 	}
 	// check for club's workshop
-	if workshop.Category == models.CategoryClub && user.ParticipantType != models.ParticipantTypeStudent {
+	if workshop.Category == models.WorkShopCategoryClub && user.ParticipantType != models.ParticipantTypeStudent {
 		return ErrParticipantTypeNotAllowed
 	}
 
