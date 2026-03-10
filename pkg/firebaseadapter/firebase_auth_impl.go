@@ -45,10 +45,14 @@ func (f *firebaseAuthImpl) VerifyIDToken(
 
 	uid := token.UID
 	email := getClaimsField(token.Claims, "email")
+	display_name := getClaimsField(token.Claims, "display_name")
+	photo_url := getClaimsField(token.Claims, "photo_url")
 
 	return &TokenInfo{
-		UserId: uid,
-		Email:  email,
+		UserId:      uid,
+		Email:       email,
+		DisplayName: display_name,
+		PhotoURL:    photo_url,
 	}, nil
 }
 

@@ -79,6 +79,7 @@ func InitServer(cfg config.Config) error {
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
 	activityUsecase := usecases.NewActivityUsecase(activityRepo)
+	stampUsecase := usecases.NewStampUsecase(bookingRepo, boothRepo)
 
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
@@ -91,7 +92,7 @@ func InitServer(cfg config.Config) error {
 	checkInGroup.UseMiddleware(mid.WithAuthContext)
 	activityGroup.UseMiddleware(mid.WithAuthContext)
 
-	handlers.InitUserHandler(userGroup, userUsecase, mid)
+	handlers.InitUserHandler(userGroup, userUsecase, stampUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
 	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
 	handlers.InitCheckInHandler(checkInGroup, checkInUsecase, mid)

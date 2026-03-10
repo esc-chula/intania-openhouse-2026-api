@@ -7,14 +7,18 @@ import (
 )
 
 type TokenInfo struct {
-	UserId string
-	Email  string
+	UserId      string
+	Email       string
+	DisplayName string
+	PhotoURL    string
 }
 
 func (t *TokenInfo) ToMapClaims() jwt.MapClaims {
 	return jwt.MapClaims{
-		"uid":   t.UserId,
-		"email": t.Email,
+		"uid":          t.UserId,
+		"email":        t.Email,
+		"display_name": t.DisplayName,
+		"photo_url":    t.PhotoURL,
 	}
 }
 
