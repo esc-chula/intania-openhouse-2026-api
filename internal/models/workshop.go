@@ -57,12 +57,16 @@ type Booking struct {
 	CheckedInAt   *time.Time `bun:"checked_in_at,nullzero"  json:"checked_in_at"`
 }
 
-// BookingWithTime is used for time-overlap checking.
-// Returned by joining bookings with workshops.
-type BookingWithTime struct {
-	bun.BaseModel `bun:"table:bookings,alias:bk"`
-	BookingID     int64     `bun:"id"                      json:"booking_id"`
-	WorkshopID    int64     `bun:"workshop_id"             json:"workshop_id"`
-	StartTime     time.Time `bun:"start_time"              json:"start_time"`
-	EndTime       time.Time `bun:"end_time"                json:"end_time"`
+// BookingWithWorkshop is used for returning booking details with workshop info.
+type BookingWithWorkshop struct {
+	ID           int64      `bun:"id"            json:"id"`
+	WorkshopID   int64      `bun:"workshop_id"   json:"workshop_id"`
+	Status       Status     `bun:"status"        json:"status"`
+	CreatedAt    time.Time  `bun:"created_at"    json:"created_at"`
+	CheckedInAt  *time.Time `bun:"checked_in_at" json:"checked_in_at"`
+	WorkshopName string     `bun:"workshop_name" json:"workshop_name"`
+	EventDate    string     `bun:"event_date"    json:"event_date"`
+	StartTime    time.Time  `bun:"start_time"    json:"start_time"`
+	EndTime      time.Time  `bun:"end_time"      json:"end_time"`
+	Location     string     `bun:"location"      json:"location"`
 }

@@ -78,6 +78,7 @@ func InitServer(cfg config.Config) error {
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
+	stampUsecase := usecases.NewStampUsecase(bookingRepo, boothRepo)
 	activityUsecase := usecases.NewActivityUsecase(activityRepo)
 
 	// Register Handler
@@ -91,7 +92,7 @@ func InitServer(cfg config.Config) error {
 	checkInGroup.UseMiddleware(mid.WithAuthContext)
 	activityGroup.UseMiddleware(mid.WithAuthContext)
 
-	handlers.InitUserHandler(userGroup, userUsecase, mid)
+	handlers.InitUserHandler(userGroup, userUsecase, stampUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
 	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
 	handlers.InitCheckInHandler(checkInGroup, checkInUsecase, mid)

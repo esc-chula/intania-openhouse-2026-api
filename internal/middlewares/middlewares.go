@@ -8,6 +8,7 @@ import (
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/config"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/firebaseadapter"
 )
+
 // Middleware interface
 type Middleware interface {
 	WithAuthContext(ctx huma.Context, next func(huma.Context))
@@ -49,6 +50,8 @@ func (m *middlewareImpl) WithAuthContext(ctx huma.Context, next func(huma.Contex
 
 	ctx = huma.WithValue(ctx, "uid", tokenInfo.UserId)
 	ctx = huma.WithValue(ctx, "email", tokenInfo.Email)
+	ctx = huma.WithValue(ctx, "display_name", tokenInfo.DisplayName)
+	ctx = huma.WithValue(ctx, "photo_url", tokenInfo.PhotoURL)
 
 	next(ctx)
 }
