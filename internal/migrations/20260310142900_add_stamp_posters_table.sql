@@ -7,7 +7,7 @@ CREATE TABLE stamp_posters (
     type stamp_type NOT NULL,
     is_redeemed BOOL NOT NULL DEFAULT FALSE,
 
-    UNIQUE (user_id)
+    UNIQUE (user_id, type)
 );
 -- +goose StatementEnd
 

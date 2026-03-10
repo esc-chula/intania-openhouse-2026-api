@@ -69,12 +69,13 @@ func InitServer(cfg config.Config) error {
 	bookingRepo := repositories.NewBookingRepo(db)
 	boothRepo := repositories.NewBoothRepo(db)
 	activityRepo := repositories.NewActivityRepo(db)
+	stampRepo := repositories.NewStampRepo(db)
 
 	// Create Transactioner
 	transactioner := baserepo.NewTransactioner(db)
 
 	// Create Usecases
-	userUsecase := usecases.NewUserUsecase(userRepo)
+	userUsecase := usecases.NewUserUsecase(userRepo, stampRepo, transactioner)
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
