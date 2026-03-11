@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE stamp_type AS ENUM ('Department', 'Club', 'Exhibition');
+CREATE TYPE stamp_type AS ENUM ('department', 'club', 'exhibition');
 CREATE TABLE stamp_posters (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -14,4 +14,5 @@ CREATE TABLE stamp_posters (
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE IF EXISTS stamp_posters;
+DROP TYPE IF EXISTS stamp_type;
 -- +goose StatementEnd

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -41,7 +42,7 @@ func InitStampHandler(
 	huma.Get(userGroup, "/me/stamps", handler.GetUserStamps, func(o *huma.Operation) {
 		errDoc, errCodes := buildErrorsDocumentation(getUserStampsErrorList)
 		o.Summary = "Get user stamps"
-		o.Description = "Retrieve user stamps and checked in details for booth and workshop." + errDoc
+		o.Description = "Retrieve user stamps and checked in details for booth and workshop. (to count stamps in each category)" + errDoc
 		o.DefaultStatus = 200
 		o.Tags = []string{stampTag}
 		o.Errors = errCodes
@@ -50,7 +51,7 @@ func InitStampHandler(
 	huma.Get(userGroup, "/me/redemption-status", handler.GetRedemptionStatus, func(o *huma.Operation) {
 		errDoc, errCodes := buildErrorsDocumentation(getRedemptionStatusErrorList)
 		o.Summary = "Get stamp redemption status"
-		o.Description = "Retrieve redemption status for each category." + errDoc
+		o.Description = "Retrieve redemption status for each category. (to check whether the redemption is possible)" + errDoc
 		o.DefaultStatus = 200
 		o.Tags = []string{stampTag}
 		o.Errors = errCodes
@@ -198,13 +199,14 @@ func (h *stampHandler) GetRedemptionStatus(ctx context.Context, input *GetRedemp
 }
 
 type RedeemStampsRequest struct {
-	Category models.StampType `query:"category" doc:"Stamp category to redeem (Department, Club, Exhibition)"`
+	Category models.StampType `query:"category" enum:"department,club,exhibition" doc:"Stamp category to redeem (department, club, exhibition)"`
 }
 
 type RedeemStampsResponse struct{}
 
 func (h *stampHandler) RedeemStamps(ctx context.Context, input *RedeemStampsRequest) (*RedeemStampsResponse, error) {
 	email, ok := ctx.Value("email").(string)
+	log.Println(email)
 	if !ok || email == "" {
 		return nil, ErrEmailNotFound
 	}

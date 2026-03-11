@@ -5,9 +5,9 @@ import "time"
 type StampType string
 
 const (
-	StampTypeDepartment StampType = "Department"
-	StampTypeClub       StampType = "Club"
-	StampTypeExhibition StampType = "Exhibition"
+	StampTypeDepartment StampType = "department"
+	StampTypeClub       StampType = "club"
+	StampTypeExhibition StampType = "exhibition"
 )
 
 type StampPoster struct {

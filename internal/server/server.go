@@ -93,6 +93,7 @@ func InitServer(cfg config.Config) error {
 	workshopGroup.UseMiddleware(mid.WithAuthContext)
 	checkInGroup.UseMiddleware(mid.WithAuthContext)
 	activityGroup.UseMiddleware(mid.WithAuthContext)
+	stampGroup.UseMiddleware(mid.WithAuthContext)
 
 	handlers.InitUserHandler(userGroup, userUsecase, stampUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
