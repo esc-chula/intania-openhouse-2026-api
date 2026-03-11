@@ -79,8 +79,8 @@ func InitServer(cfg config.Config) error {
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
+	stampUsecase := usecases.NewStampUsecase(bookingRepo, boothRepo)
 	activityUsecase := usecases.NewActivityUsecase(activityRepo)
-	stampUsecase := usecases.NewStampUsecase(stampRepo, bookingRepo, boothRepo)
 
 	// Register Handler
 	userGroup := huma.NewGroup(api, "/users")
