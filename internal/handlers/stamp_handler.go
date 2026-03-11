@@ -2,12 +2,19 @@ package handlers
 
 import (
 	"context"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/repositories"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/usecases"
+)
+
+var (
+	ErrAlreadyRedeemed     = huma.Error400BadRequest("stamps were redeemd")
+	ErrNotEnoughStamps     = huma.Error400BadRequest("not enough stamps to redeem")
+	ErrStampPosterNotFound = huma.Error404NotFound("stamp poster not found")
 )
 
 type stampHandler struct {
@@ -32,11 +39,38 @@ func InitStampHandler(
 	stampTag := "stamp"
 
 	huma.Get(userGroup, "/me/stamps", handler.GetUserStamps, func(o *huma.Operation) {
+		errDoc, errCodes := buildErrorsDocumentation(getUserStampsErrorList)
 		o.Summary = "Get user stamps"
-		o.Description = "Retrieve user stamps and checked in details for booth and workshop."
+		o.Description = "Retrieve user stamps and checked in details for booth and workshop." + errDoc
+		o.DefaultStatus = 200
 		o.Tags = []string{stampTag}
+		o.Errors = errCodes
+	})
+
+	huma.Get(userGroup, "/me/redemption-status", handler.GetRedemptionStatus, func(o *huma.Operation) {
+		errDoc, errCodes := buildErrorsDocumentation(getRedemptionStatusErrorList)
+		o.Summary = "Get stamp redemption status"
+		o.Description = "Retrieve redemption status for each category." + errDoc
+		o.DefaultStatus = 200
+		o.Tags = []string{stampTag}
+		o.Errors = errCodes
+	})
+
+	huma.Post(stampGroup, "/redemptions", handler.RedeemStamps, func(o *huma.Operation) {
+		errDoc, errCodes := buildErrorsDocumentation(redeemStampsErrorList)
+		o.Summary = "Redeem stamps"
+		o.Description = "Redeem stamps for a specific category." + errDoc
+		o.DefaultStatus = 200
+		o.Tags = []string{stampTag}
+		o.Errors = errCodes
 	})
 }
+
+var (
+	getUserStampsErrorList       = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError}
+	getRedemptionStatusErrorList = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError}
+	redeemStampsErrorList        = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrAlreadyRedeemed, ErrNotEnoughStamps, ErrStampPosterNotFound, ErrInternalServerError}
+)
 
 type GetUserStampsRequest struct{}
 
@@ -45,20 +79,20 @@ type GetUserStampsResponse struct {
 }
 
 type GetUserStampsResponseBody struct {
-	TotalCount           int64           `json:"total_count"`
-	DepartmentStampCount int64           `json:"department_stamp_count"`
-	ClubStampCount       int64           `json:"club_stamp_count"`
-	ExhibitionStampCount int64           `json:"exhibition_stamp_count"`
-	DepartmentStamps     []StampItemBody `json:"department_stamps"`
-	ClubStamps           []StampItemBody `json:"club_stamps"`
-	ExhibitionStamps     []StampItemBody `json:"exhibition_stamps"`
+	TotalCount           int64           `json:"total_count" doc:"Overall count of all stamps collected"`
+	DepartmentStampCount int64           `json:"department_stamp_count" doc:"Number of department stamps collected"`
+	ClubStampCount       int64           `json:"club_stamp_count" doc:"Number of club stamps collected"`
+	ExhibitionStampCount int64           `json:"exhibition_stamp_count" doc:"Number of exhibition stamps collected"`
+	DepartmentStamps     []StampItemBody `json:"department_stamps" doc:"List of specific department stamps"`
+	ClubStamps           []StampItemBody `json:"club_stamps" doc:"List of specific club stamps"`
+	ExhibitionStamps     []StampItemBody `json:"exhibition_stamps" doc:"List of specific exhibition stamps"`
 }
 
 type StampItemBody struct {
-	ID          int64  `json:"id"`
-	Type        string `json:"type"`
-	Name        string `json:"name"`
-	CheckedInAt string `json:"checked_in_at"`
+	ID          int64            `json:"id"`
+	Type        models.StampType `json:"type"`
+	Name        string           `json:"name"`
+	CheckedInAt time.Time        `json:"checked_in_at"`
 }
 
 func (h *stampHandler) GetUserStamps(ctx context.Context, input *GetUserStampsRequest) (*GetUserStampsResponse, error) {
@@ -80,35 +114,119 @@ func (h *stampHandler) GetUserStamps(ctx context.Context, input *GetUserStampsRe
 		return nil, ErrInternalServerError
 	}
 
-	departmentStamps := make([]StampItemBody, 0, len(stamps.Stamps))
-	clubStamps := make([]StampItemBody, 0, len(stamps.Stamps))
-	exhibitionStamps := make([]StampItemBody, 0, len(stamps.Stamps))
-	for _, s := range stamps.Stamps {
-		item := StampItemBody{
+	var departmentStamps, clubStamps, exhibitionStamps []StampItemBody
+
+	for _, s := range stamps.DepartmentStamps {
+		departmentStamps = append(departmentStamps, StampItemBody{
 			ID:          s.ID,
-			Type:        string(s.Type),
+			Type:        s.Type,
 			Name:        s.Name,
-			CheckedInAt: s.CheckedInAt.Format("2006-01-02T15:04:05Z07:00"),
-		}
-		switch s.Type {
-		case models.StampTypeDepartment:
-			departmentStamps = append(departmentStamps, item)
-		case models.StampTypeClub:
-			clubStamps = append(clubStamps, item)
-		case models.StampTypeExhibition:
-			exhibitionStamps = append(exhibitionStamps, item)
-		}
+			CheckedInAt: s.CheckedInAt,
+		})
+	}
+	for _, s := range stamps.ClubStamps {
+		clubStamps = append(clubStamps, StampItemBody{
+			ID:          s.ID,
+			Type:        s.Type,
+			Name:        s.Name,
+			CheckedInAt: s.CheckedInAt,
+		})
+	}
+	for _, s := range stamps.ExhibitionStamps {
+		exhibitionStamps = append(exhibitionStamps, StampItemBody{
+			ID:          s.ID,
+			Type:        s.Type,
+			Name:        s.Name,
+			CheckedInAt: s.CheckedInAt,
+		})
 	}
 
 	return &GetUserStampsResponse{
 		Body: GetUserStampsResponseBody{
 			TotalCount:           stamps.TotalCount,
-			DepartmentStampCount: int64(len(departmentStamps)),
-			ClubStampCount:       int64(len(clubStamps)),
-			ExhibitionStampCount: int64(len(exhibitionStamps)),
+			DepartmentStampCount: stamps.DepartmentStampCount,
+			ClubStampCount:       stamps.ClubStampCount,
+			ExhibitionStampCount: stamps.ExhibitionStampCount,
 			DepartmentStamps:     departmentStamps,
 			ClubStamps:           clubStamps,
 			ExhibitionStamps:     exhibitionStamps,
 		},
 	}, nil
+}
+
+type GetRedemptionStatusRequest struct{}
+
+type GetRedemptionStatusResponse struct {
+	Body GetRedemptionStatusResponseBody
+}
+
+type GetRedemptionStatusResponseBody struct {
+	DepartmentRedeemable bool `json:"department_redeemable" doc:"True if user has enough department stamps and hasn't redeemed yet"`
+	ClubRedeemable       bool `json:"club_redeemable" doc:"True if user has enough club stamps and hasn't redeemed yet"`
+	ExhibitionRedeemable bool `json:"exhibition_redeemable" doc:"True if user has enough exhibition stamps and hasn't redeemed yet"`
+	DepartmentIsRedeemed bool `json:"department_is_redeemed" doc:"True if user has already redeemed department reward"`
+	ClubIsRedeemed       bool `json:"club_is_redeemed" doc:"True if user has already redeemed club reward"`
+	ExhibitionIsRedeemed bool `json:"exhibition_is_redeemed" doc:"True if user has already redeemed exhibition reward"`
+}
+
+func (h *stampHandler) GetRedemptionStatus(ctx context.Context, input *GetRedemptionStatusRequest) (*GetRedemptionStatusResponse, error) {
+	email, ok := ctx.Value("email").(string)
+	if !ok || email == "" {
+		return nil, ErrEmailNotFound
+	}
+
+	user, err := h.userUsecase.GetUser(ctx, email, []string{"id"})
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	status, err := h.stampUsecase.GetMyStampPosters(ctx, user.ID)
+	if err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	return &GetRedemptionStatusResponse{
+		Body: GetRedemptionStatusResponseBody{
+			DepartmentRedeemable: status.DepartmentRedeemable,
+			ClubRedeemable:       status.ClubRedeemable,
+			ExhibitionRedeemable: status.ExhibitionRedeemable,
+			DepartmentIsRedeemed: status.DepartmentIsRedeemed,
+			ClubIsRedeemed:       status.ClubIsRedeemed,
+			ExhibitionIsRedeemed: status.ExhibitionIsRedeemed,
+		},
+	}, nil
+}
+
+type RedeemStampsRequest struct {
+	Category models.StampType `query:"category" doc:"Stamp category to redeem (Department, Club, Exhibition)"`
+}
+
+type RedeemStampsResponse struct{}
+
+func (h *stampHandler) RedeemStamps(ctx context.Context, input *RedeemStampsRequest) (*RedeemStampsResponse, error) {
+	email, ok := ctx.Value("email").(string)
+	if !ok || email == "" {
+		return nil, ErrEmailNotFound
+	}
+
+	user, err := h.userUsecase.GetUser(ctx, email, []string{"id"})
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	err = h.stampUsecase.RedeemStamps(ctx, user.ID, input.Category)
+	if err != nil {
+		switch err {
+		case usecases.ErrAlreadyRedeemed:
+			return nil, ErrAlreadyRedeemed
+		case usecases.ErrNotEnoughStamps:
+			return nil, ErrNotEnoughStamps
+		case repositories.ErrStampPosterNotFound:
+			return nil, ErrStampPosterNotFound
+		default:
+			return nil, ErrInternalServerError
+		}
+	}
+
+	return &RedeemStampsResponse{}, nil
 }
