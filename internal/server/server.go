@@ -79,7 +79,7 @@ func InitServer(cfg config.Config) error {
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
-	stampUsecase := usecases.NewStampUsecase(bookingRepo, boothRepo)
+	stampUsecase := usecases.NewStampUsecase(stampRepo, bookingRepo, boothRepo)
 	activityUsecase := usecases.NewActivityUsecase(activityRepo)
 
 	// Register Handler
