@@ -87,6 +87,7 @@ func InitServer(cfg config.Config) error {
 	workshopGroup := huma.NewGroup(api, "/workshops")
 	checkInGroup := huma.NewGroup(api, "/check-in")
 	activityGroup := huma.NewGroup(api, "/activities")
+	stampGroup := huma.NewGroup(api, "/stamps")
 
 	userGroup.UseMiddleware(mid.WithAuthContext)
 	workshopGroup.UseMiddleware(mid.WithAuthContext)
@@ -98,6 +99,7 @@ func InitServer(cfg config.Config) error {
 	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
 	handlers.InitCheckInHandler(checkInGroup, checkInUsecase, mid)
 	handlers.InitActivityHandler(activityGroup, activityUsecase, mid)
+	handlers.InitStampHandler(stampGroup, userGroup, stampUsecase, userUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)
