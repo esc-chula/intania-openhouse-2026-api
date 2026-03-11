@@ -97,6 +97,7 @@ func (u *stampUsecaseImpl) GetMyStampPosters(ctx context.Context, userID int64) 
 		return nil, err
 	}
 
+	// check sufficient stamps count
 	result := &models.StampRedemptionStatus{
 		DepartmentRedeemable: stamps.DepartmentStampCount >= MinStampsToRedeem,
 		ClubRedeemable:       stamps.ClubStampCount >= MinStampsToRedeem,
@@ -114,7 +115,7 @@ func (u *stampUsecaseImpl) GetMyStampPosters(ctx context.Context, userID int64) 
 		}
 	}
 
-	// Double check redeemable status by considering if it's already redeemed
+	// check if stamps had been redeemed
 	result.DepartmentRedeemable = result.DepartmentRedeemable && !result.DepartmentIsRedeemed
 	result.ClubRedeemable = result.ClubRedeemable && !result.ClubIsRedeemed
 	result.ExhibitionRedeemable = result.ExhibitionRedeemable && !result.ExhibitionIsRedeemed

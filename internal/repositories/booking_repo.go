@@ -171,7 +171,7 @@ func (r *bookingRepoImpl) GetAttendedWorkshopsForUser(ctx context.Context, userI
 			ColumnExpr("ws.id AS id").
 			ColumnExpr("ws.name AS name").
 			ColumnExpr("bk.checked_in_at AS checked_in_at").
-			ColumnExpr("ws.category AS ").
+			ColumnExpr("ws.category AS type").
 			Join("JOIN workshops AS ws ON ws.id = bk.workshop_id").
 			Where("bk.user_id = ?", userID).
 			Where("bk.status = ?", models.StatusAttended).
