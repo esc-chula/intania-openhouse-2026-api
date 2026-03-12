@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -13,9 +12,10 @@ import (
 )
 
 var (
-	ErrAlreadyRedeemed     = huma.Error400BadRequest("stamps were redeemd")
-	ErrNotEnoughStamps     = huma.Error400BadRequest("not enough stamps to redeem")
-	ErrStampPosterNotFound = huma.Error404NotFound("stamp poster not found")
+	ErrStampPosterAlreadyRedeemed = huma.Error400BadRequest("stamps were redeemd")
+	ErrNotEnoughStamps            = huma.Error400BadRequest("not enough stamps to redeem")
+	ErrStampPosterNotFound        = huma.Error404NotFound("stamp poster not found")
+	ErrInvalidStampCategory       = huma.Error400BadRequest("invalid stamp category")
 )
 
 type stampHandler struct {
@@ -70,7 +70,7 @@ func InitStampHandler(
 var (
 	getUserStampsErrorList       = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError}
 	getRedemptionStatusErrorList = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError}
-	redeemStampsErrorList        = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrAlreadyRedeemed, ErrNotEnoughStamps, ErrStampPosterNotFound, ErrInternalServerError}
+	redeemStampsErrorList        = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrStampPosterAlreadyRedeemed, ErrNotEnoughStamps, ErrStampPosterNotFound, ErrInternalServerError}
 )
 
 type GetUserStampsRequest struct{}
@@ -178,7 +178,10 @@ func (h *stampHandler) GetRedemptionStatus(ctx context.Context, input *GetRedemp
 
 	user, err := h.userUsecase.GetUser(ctx, email, []string{"id"})
 	if err != nil {
-		return nil, ErrUserNotFound
+		if err == repositories.ErrUserNotFound {
+			return nil, ErrUserNotFound
+		}
+		return nil, ErrInternalServerError
 	}
 
 	status, err := h.stampUsecase.GetMyStampPosters(ctx, user.ID)
@@ -206,21 +209,25 @@ type RedeemStampsResponse struct{}
 
 func (h *stampHandler) RedeemStamps(ctx context.Context, input *RedeemStampsRequest) (*RedeemStampsResponse, error) {
 	email, ok := ctx.Value("email").(string)
-	log.Println(email)
 	if !ok || email == "" {
 		return nil, ErrEmailNotFound
 	}
 
 	user, err := h.userUsecase.GetUser(ctx, email, []string{"id"})
 	if err != nil {
-		return nil, ErrUserNotFound
+		if err == repositories.ErrUserNotFound {
+			return nil, ErrUserNotFound
+		}
+		return nil, ErrInternalServerError
 	}
 
 	err = h.stampUsecase.RedeemStamps(ctx, user.ID, input.Category)
 	if err != nil {
 		switch err {
-		case usecases.ErrAlreadyRedeemed:
-			return nil, ErrAlreadyRedeemed
+		case usecases.ErrStampPosterAlreadyRedeemed:
+			return nil, ErrStampPosterAlreadyRedeemed
+		case usecases.ErrInvalidStampCategory:
+			return nil, ErrInvalidStampCategory
 		case usecases.ErrNotEnoughStamps:
 			return nil, ErrNotEnoughStamps
 		case repositories.ErrStampPosterNotFound:

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
@@ -10,7 +11,8 @@ import (
 )
 
 var (
-	ErrStampPosterNotFound = errors.New("stamp poster not found")
+	ErrStampPosterNotFound        = errors.New("stamp poster not found")
+	ErrStampPosterAlreadyRedeemed = errors.New("stamp poster already redeemed")
 )
 
 type StampRepo interface {
@@ -60,13 +62,12 @@ func (r *stampRepoImpl) GetUserStampPosters(ctx context.Context, userID int64) (
 }
 
 func (r *stampRepoImpl) RedeemStamps(ctx context.Context, userID int64, category models.StampType) error {
-
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
 		res, err := idb.
 			NewUpdate().
 			Table("stamp_posters").
 			Set("is_redeemed = ?", true).
-			Where("user_id = ? AND type = ?", userID, category).
+			Where("user_id = ? AND type = ? AND is_redeemed = ?", userID, category, false).
 			Exec(ctx)
 		if err != nil {
 			return err
@@ -78,6 +79,25 @@ func (r *stampRepoImpl) RedeemStamps(ctx context.Context, userID int64, category
 		}
 
 		if rows == 0 {
+			var poster models.StampPoster
+			selectErr := idb.
+				NewSelect().
+				Model(&poster).
+				Where("user_id = ? AND type = ?", userID, category).
+				Limit(1).
+				Scan(ctx)
+
+			if selectErr != nil {
+				if errors.Is(selectErr, sql.ErrNoRows) {
+					return ErrStampPosterNotFound
+				}
+				return selectErr
+			}
+
+			if poster.IsRedeemed {
+				return ErrStampPosterAlreadyRedeemed
+			}
+
 			return ErrStampPosterNotFound
 		}
 

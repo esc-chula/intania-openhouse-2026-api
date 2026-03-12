@@ -14,8 +14,9 @@ const (
 )
 
 var (
-	ErrAlreadyRedeemed = errors.New("stamps were redeemed")
-	ErrNotEnoughStamps = errors.New("not enough stamps to redeem")
+	ErrStampPosterAlreadyRedeemed = errors.New("stamps were redeemed")
+	ErrNotEnoughStamps            = errors.New("not enough stamps to redeem")
+	ErrInvalidStampCategory       = errors.New("invalid stamp category")
 )
 
 type StampUsecase interface {
@@ -144,11 +145,11 @@ func (u *stampUsecaseImpl) RedeemStamps(ctx context.Context, userID int64, categ
 		redeemable = status.ExhibitionRedeemable
 		alreadyRedeemed = status.ExhibitionIsRedeemed
 	default:
-		return nil
+		return ErrInvalidStampCategory
 	}
 
 	if alreadyRedeemed {
-		return ErrAlreadyRedeemed
+		return ErrStampPosterAlreadyRedeemed
 	}
 
 	if !redeemable {
@@ -156,6 +157,9 @@ func (u *stampUsecaseImpl) RedeemStamps(ctx context.Context, userID int64, categ
 	}
 
 	if err := u.stampRepo.RedeemStamps(ctx, userID, category); err != nil {
+		if errors.Is(err, repositories.ErrStampPosterAlreadyRedeemed) {
+			return ErrStampPosterAlreadyRedeemed
+		}
 		return err
 	}
 	return nil
