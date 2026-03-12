@@ -162,12 +162,14 @@ type GetRedemptionStatusResponse struct {
 }
 
 type GetRedemptionStatusResponseBody struct {
-	DepartmentRedeemable bool `json:"department_redeemable" doc:"True if user has enough department stamps and hasn't redeemed yet"`
-	ClubRedeemable       bool `json:"club_redeemable" doc:"True if user has enough club stamps and hasn't redeemed yet"`
-	ExhibitionRedeemable bool `json:"exhibition_redeemable" doc:"True if user has enough exhibition stamps and hasn't redeemed yet"`
-	DepartmentIsRedeemed bool `json:"department_is_redeemed" doc:"True if user has already redeemed department reward"`
-	ClubIsRedeemed       bool `json:"club_is_redeemed" doc:"True if user has already redeemed club reward"`
-	ExhibitionIsRedeemed bool `json:"exhibition_is_redeemed" doc:"True if user has already redeemed exhibition reward"`
+	Department RedemptionStatusItem `json:"department" doc:"Redemption status for department stamps"`
+	Club       RedemptionStatusItem `json:"club" doc:"Redemption status for club stamps"`
+	Exhibition RedemptionStatusItem `json:"exhibition" doc:"Redemption status for exhibition stamps"`
+}
+
+type RedemptionStatusItem struct {
+	Redeemable bool `json:"redeemable" doc:"True if user has enough stamps and hasn't redeemed yet"`
+	IsRedeemed bool `json:"is_redeemed" doc:"True if user has already redeemed reward"`
 }
 
 func (h *stampHandler) GetRedemptionStatus(ctx context.Context, input *GetRedemptionStatusRequest) (*GetRedemptionStatusResponse, error) {
@@ -191,12 +193,18 @@ func (h *stampHandler) GetRedemptionStatus(ctx context.Context, input *GetRedemp
 
 	return &GetRedemptionStatusResponse{
 		Body: GetRedemptionStatusResponseBody{
-			DepartmentRedeemable: status.DepartmentRedeemable,
-			ClubRedeemable:       status.ClubRedeemable,
-			ExhibitionRedeemable: status.ExhibitionRedeemable,
-			DepartmentIsRedeemed: status.DepartmentIsRedeemed,
-			ClubIsRedeemed:       status.ClubIsRedeemed,
-			ExhibitionIsRedeemed: status.ExhibitionIsRedeemed,
+			Department: RedemptionStatusItem{
+				Redeemable: status.DepartmentRedeemable,
+				IsRedeemed: status.DepartmentIsRedeemed,
+			},
+			Club: RedemptionStatusItem{
+				Redeemable: status.ClubRedeemable,
+				IsRedeemed: status.ClubIsRedeemed,
+			},
+			Exhibition: RedemptionStatusItem{
+				Redeemable: status.ExhibitionRedeemable,
+				IsRedeemed: status.ExhibitionIsRedeemed,
+			},
 		},
 	}, nil
 }
