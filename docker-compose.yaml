@@ -10,6 +10,47 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - intania-openhouse-2026-network
+
+  backend:
+    build:
+      context: .
+      target: normal
+    container_name: intania-openhouse-2026-backend
+    env_file:
+      - ./.env.dev
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_started
+    networks:
+      - intania-openhouse-2026-network
+
+  backend-testing:
+    build:
+      context: .
+      target: testing
+    container_name: intania-openhouse-2026-backend-testing
+    env_file:
+      - ./.env.testing
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_started
+    networks:
+      - intania-openhouse-2026-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 500M
 
 volumes:
   postgres_data:
+
+networks:
+  intania-openhouse-2026-network:
+    driver: bridge
