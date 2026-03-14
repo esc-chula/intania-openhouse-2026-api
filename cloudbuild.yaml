@@ -1,0 +1,37 @@
+substitutions:
+  _IMAGE_NAME: 'asia-southeast3-docker.pkg.dev/intania-openhouse-2026/cloud-run-source-deploy/intania-openhouse-2026'
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '--target'
+  - 'normal'
+  - '-t'
+  - '$_IMAGE_NAME:$COMMIT_SHA'
+  - '.'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '$_IMAGE_NAME:$COMMIT_SHA']
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - 'run'
+  - 'deploy'
+  - 'intania-openhouse-2026-api'
+  - '--image'
+  - '$_IMAGE_NAME:$COMMIT_SHA'
+  - '--region'
+  - 'asia-southeast3'
+  - '--add-cloudsql-instances'
+  - 'intania-openhouse-2026:asia-southeast3:intania-openhouse-2026-db'
+  - '--platform'
+  - 'managed'
+
+images:
+- '$_IMAGE_NAME:$COMMIT_SHA'
+
+serviceAccount: 'projects/intania-openhouse-2026/serviceAccounts/firebase-adminsdk-fbsvc@intania-openhouse-2026.iam.gserviceaccount.com'
+
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
