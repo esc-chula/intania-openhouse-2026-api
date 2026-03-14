@@ -50,7 +50,7 @@ type CheckInRequest struct {
 
 type CheckInResponse struct{}
 
-var checkInErrorList = []huma.StatusError{ErrEmailNotFound, ErrInvalidCode, ErrAlreadyCheckedIn, ErrInternalServerError}
+var checkInErrorList = []huma.StatusError{ErrEmailNotFound, ErrInvalidCode, ErrAlreadyCheckedIn, ErrInternalServerError()}
 
 func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*CheckInResponse, error) {
 	email, ok := ctx.Value("email").(string)
@@ -76,7 +76,7 @@ func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*C
 		case repositories.ErrUserNotFound:
 			return nil, ErrUserNotFound
 		default:
-			return nil, ErrInternalServerError
+			return nil, ErrInternalServerError(err)
 		}
 	}
 

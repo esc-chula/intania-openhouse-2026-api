@@ -26,6 +26,9 @@ func InitServer(cfg config.Config) error {
 	router := chi.NewMux()
 	humaCfg := huma.DefaultConfig("intania-openhouse-2026", "1.0.0")
 
+	// Setup request error logger
+	humaCfg.Transformers = append(humaCfg.Transformers, ErrorCaptureTransformer)
+
 	router.Use(middleware.Logger)
 	if cfg.App().IsProduction {
 		humaCfg.DocsPath = ""
@@ -50,6 +53,11 @@ func InitServer(cfg config.Config) error {
 	}))
 
 	api := humachi.New(router, humaCfg)
+
+	// Setup request error logger
+	api.UseMiddleware(ErrorRecorderMiddleware)
+	api.UseMiddleware(ErrorLoggerMiddleware)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
