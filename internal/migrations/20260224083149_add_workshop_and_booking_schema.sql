@@ -22,7 +22,8 @@ CREATE TABLE workshops (
     
     CHECK (end_time > start_time)
 );
-CREATE INDEX idx_workshops_event_date ON workshops(event_date);
+CREATE INDEX idx_workshops_filter_start_time_sort ON workshops (category, event_date, start_time);
+CREATE INDEX idx_workshops_filter_name_sort ON workshops (category, event_date, name);
 
 
 CREATE TYPE booking_status AS ENUM ('Confirmed', 'Cancelled');
