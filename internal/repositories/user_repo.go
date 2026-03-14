@@ -7,8 +7,9 @@ import (
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/baserepo"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 var (
@@ -35,7 +36,7 @@ func (r *userRepoImpl) CreateUser(ctx context.Context, user *models.User) error 
 	return r.exec.Run(ctx, func(idb bun.IDB) error {
 		_, err := idb.NewInsert().Model(user).Exec(ctx)
 		if err != nil {
-			if pgErr, ok := err.(pgdriver.Error); ok && pgErr.IntegrityViolation() && pgErr.Field('C') == "23505" {
+			if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == pgerrcode.UniqueViolation {
 				return ErrUserAlreadyExists
 			}
 			return err
@@ -47,7 +48,6 @@ func (r *userRepoImpl) CreateUser(ctx context.Context, user *models.User) error 
 func (r *userRepoImpl) GetUserByEmail(ctx context.Context, email string, fields []string) (*models.User, error) {
 	user := new(models.User)
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
-
 		query := idb.NewSelect().
 			Model(user).
 			Where("email = ?", email)

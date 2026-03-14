@@ -8,8 +8,9 @@ import (
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/baserepo"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 var (
@@ -43,7 +44,7 @@ func (r *bookingRepoImpl) CreateBooking(ctx context.Context, booking *models.Boo
 	return r.exec.Run(ctx, func(idb bun.IDB) error {
 		_, err := idb.NewInsert().Model(booking).Exec(ctx)
 		if err != nil {
-			if pgErr, ok := err.(pgdriver.Error); ok && pgErr.IntegrityViolation() && pgErr.Field('C') == "23505" {
+			if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == pgerrcode.UniqueViolation {
 				return ErrAlreadyBooked
 			}
 			return err
