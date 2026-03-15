@@ -50,7 +50,7 @@ func InitWorkshopHandler(api huma.API, usecase usecases.WorkshopUsecase, mid mid
 
 type GetWorkshopRequest struct {
 	ID     int64    `path:"id"`
-	Fields []string `query:"fields" explode:"true" enum:"id,name,description,category,affiliation,event_date,start_time,end_time,location,total_seats,registered_count"`
+	Fields []string `query:"fields" explode:"true" enum:"id,name,description,category,affiliation,event_date,start_time,end_time,location,total_seats,registered_count,image"`
 }
 type GetWorkshopResponse struct {
 	Body GetWorkshopResponseBody `json:"body"`
@@ -67,6 +67,7 @@ type GetWorkshopResponseBody struct {
 	Location        string          `json:"location,omitempty"`
 	TotalSeats      int             `json:"total_seats,omitempty"`
 	RegisteredCount int             `json:"registered_count,omitempty"`
+	Image           string          `json:"image,omitempty"`
 }
 
 func (h *workshopHandler) GetWorkshop(ctx context.Context, input *GetWorkshopRequest) (*GetWorkshopResponse, error) {
@@ -99,6 +100,7 @@ func (h *workshopHandler) GetWorkshop(ctx context.Context, input *GetWorkshopReq
 			Location:        w.Location,
 			TotalSeats:      w.TotalSeats,
 			RegisteredCount: w.RegisteredCount,
+			Image:           w.Image,
 		},
 	}, nil
 }
@@ -129,6 +131,7 @@ type WorkshopItem struct {
 	Location        string          `json:"location"`
 	TotalSeats      int             `json:"total_seats"`
 	RegisteredCount int             `json:"registered_count"`
+	Image           string          `json:"image"`
 }
 
 func (h *workshopHandler) ListWorkshop(ctx context.Context, input *ListWorkshopRequest) (*ListWorkshopResponse, error) {
@@ -175,6 +178,7 @@ func (h *workshopHandler) ListWorkshop(ctx context.Context, input *ListWorkshopR
 			Location:        w.Location,
 			TotalSeats:      w.TotalSeats,
 			RegisteredCount: w.RegisteredCount,
+			Image:           w.Image,
 		})
 	}
 

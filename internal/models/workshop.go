@@ -26,6 +26,7 @@ type Workshop struct {
 	Location        string    `bun:"location"                 json:"location"`
 	TotalSeats      int       `bun:"total_seats"              json:"total_seats"`
 	RegisteredCount int       `bun:"registered_count"         json:"registered_count"`
+	Image           string    `bun:"image"                    json:"image"`
 	CheckInCode     string    `bun:"check_in_code,nullzero"   json:"-"`
 }
 
