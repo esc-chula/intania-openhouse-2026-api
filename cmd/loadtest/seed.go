@@ -50,9 +50,9 @@ func seedData(ctx context.Context, db *bun.DB) *SeedData {
 
 	workshops := make([]models.Workshop, MAX_DATA_ITEM)
 	for i := range workshops {
-		category := models.CategoryDepartment
+		category := models.WorkShopCategoryDepartment
 		if rand.Intn(2) == 1 {
-			category = models.CategoryClub
+			category = models.WorkShopCategoryClub
 		}
 
 		workshops[i] = models.Workshop{

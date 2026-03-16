@@ -68,9 +68,9 @@ func InitStampHandler(
 }
 
 var (
-	getUserStampsErrorList       = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError}
-	getRedemptionStatusErrorList = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError}
-	redeemStampsErrorList        = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrStampPosterAlreadyRedeemed, ErrNotEnoughStamps, ErrStampPosterNotFound, ErrInternalServerError}
+	getUserStampsErrorList       = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError()}
+	getRedemptionStatusErrorList = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrInternalServerError()}
+	redeemStampsErrorList        = []huma.StatusError{ErrEmailNotFound, ErrUserNotFound, ErrStampPosterAlreadyRedeemed, ErrNotEnoughStamps, ErrStampPosterNotFound, ErrInternalServerError()}
 )
 
 type GetUserStampsRequest struct{}
@@ -107,12 +107,12 @@ func (h *stampHandler) GetUserStamps(ctx context.Context, input *GetUserStampsRe
 		if err == repositories.ErrUserNotFound {
 			return nil, ErrUserNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	stamps, err := h.stampUsecase.GetUserStamps(ctx, user.ID)
 	if err != nil {
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	var departmentStamps, clubStamps, exhibitionStamps []StampItemBody
@@ -183,12 +183,12 @@ func (h *stampHandler) GetRedemptionStatus(ctx context.Context, input *GetRedemp
 		if err == repositories.ErrUserNotFound {
 			return nil, ErrUserNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	status, err := h.stampUsecase.GetMyStampPosters(ctx, user.ID)
 	if err != nil {
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	return &GetRedemptionStatusResponse{
@@ -226,7 +226,7 @@ func (h *stampHandler) RedeemStamps(ctx context.Context, input *RedeemStampsRequ
 		if err == repositories.ErrUserNotFound {
 			return nil, ErrUserNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	err = h.stampUsecase.RedeemStamps(ctx, user.ID, input.Category)
@@ -241,7 +241,7 @@ func (h *stampHandler) RedeemStamps(ctx context.Context, input *RedeemStampsRequ
 		case repositories.ErrStampPosterNotFound:
 			return nil, ErrStampPosterNotFound
 		default:
-			return nil, ErrInternalServerError
+			return nil, ErrInternalServerError(err)
 		}
 	}
 
