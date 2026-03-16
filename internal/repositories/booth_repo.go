@@ -80,6 +80,7 @@ func (r *boothRepoImpl) GetBoothCheckInsForUser(ctx context.Context, userID int6
 			TableExpr("booth_checkins AS btck").
 			ColumnExpr("bt.id AS id").
 			ColumnExpr("bt.name AS name").
+			ColumnExpr("bt.category AS type").
 			ColumnExpr("btck.checked_in_at AS checked_in_at").
 			Join("JOIN booths AS bt ON bt.id = btck.booth_id").
 			Where("btck.user_id = ?", userID).
@@ -90,10 +91,6 @@ func (r *boothRepoImpl) GetBoothCheckInsForUser(ctx context.Context, userID int6
 			return stamps, nil
 		}
 		return nil, err
-	}
-	// Set type for all items
-	for i := range stamps {
-		stamps[i].Type = models.StampTypeBooth
 	}
 	return stamps, nil
 }

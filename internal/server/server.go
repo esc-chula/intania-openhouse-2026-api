@@ -77,16 +77,17 @@ func InitServer(cfg config.Config) error {
 	bookingRepo := repositories.NewBookingRepo(db)
 	boothRepo := repositories.NewBoothRepo(db)
 	activityRepo := repositories.NewActivityRepo(db)
+	stampRepo := repositories.NewStampRepo(db)
 
 	// Create Transactioner
 	transactioner := baserepo.NewTransactioner(db)
 
 	// Create Usecases
-	userUsecase := usecases.NewUserUsecase(userRepo)
+	userUsecase := usecases.NewUserUsecase(userRepo, stampRepo, transactioner)
 	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
-	stampUsecase := usecases.NewStampUsecase(bookingRepo, boothRepo)
+	stampUsecase := usecases.NewStampUsecase(stampRepo, bookingRepo, boothRepo)
 	activityUsecase := usecases.NewActivityUsecase(activityRepo)
 
 	// Register Handler
@@ -94,17 +95,20 @@ func InitServer(cfg config.Config) error {
 	workshopGroup := huma.NewGroup(api, "/workshops")
 	checkInGroup := huma.NewGroup(api, "/check-in")
 	activityGroup := huma.NewGroup(api, "/activities")
+	stampGroup := huma.NewGroup(api, "/stamps")
 
 	userGroup.UseMiddleware(mid.WithAuthContext)
 	workshopGroup.UseMiddleware(mid.WithAuthContext)
 	checkInGroup.UseMiddleware(mid.WithAuthContext)
 	activityGroup.UseMiddleware(mid.WithAuthContext)
+	stampGroup.UseMiddleware(mid.WithAuthContext)
 
 	handlers.InitUserHandler(userGroup, userUsecase, stampUsecase, mid)
 	handlers.InitWorkshopHandler(workshopGroup, workshopUsecase, mid)
 	handlers.InitBookingHandler(workshopGroup, userGroup, bookingUsecase, userUsecase, mid)
 	handlers.InitCheckInHandler(checkInGroup, checkInUsecase, mid)
 	handlers.InitActivityHandler(activityGroup, activityUsecase, mid)
+	handlers.InitStampHandler(stampGroup, userGroup, stampUsecase, userUsecase, mid)
 
 	if err := http.ListenAndServe(cfg.App().Address, router); err != nil {
 		log.Fatal(err)
