@@ -27,8 +27,8 @@ func (f *firebaseJwtImpl) VerifyIDToken(
 
 	uid := getClaimsField(claims, "uid")
 	email := getClaimsField(claims, "email")
-	display_name := getClaimsField(claims, "display_name")
-	photo_url := getClaimsField(claims, "photo_url")
+	display_name := getClaimsField(claims, "name")
+	photo_url := getClaimsField(claims, "picture")
 
 	return &TokenInfo{
 		UserId:      uid,

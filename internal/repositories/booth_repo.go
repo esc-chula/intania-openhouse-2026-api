@@ -8,8 +8,9 @@ import (
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/baserepo"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 var (
@@ -61,7 +62,7 @@ func (r *boothRepoImpl) CreateBoothCheckIn(ctx context.Context, userID int64, bo
 			CheckedInAt: time.Now(),
 		}).Exec(ctx)
 		if err != nil {
-			if pgErr, ok := err.(pgdriver.Error); ok && pgErr.Field('C') == "23505" {
+			if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == pgerrcode.UniqueViolation {
 				return ErrAlreadyCheckedInBooth
 			}
 

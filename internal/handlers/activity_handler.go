@@ -85,7 +85,7 @@ func (h *activityHandler) ListActivities(ctx context.Context, input *ListActivit
 
 	activities, err := h.usecase.ListActivities(ctx, filter)
 	if err != nil {
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	now := time.Now()
@@ -126,7 +126,7 @@ func (h *activityHandler) GetActivity(ctx context.Context, input *GetActivityReq
 		if err == repositories.ErrActivityNotFound {
 			return nil, ErrActivityNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	now := time.Now()

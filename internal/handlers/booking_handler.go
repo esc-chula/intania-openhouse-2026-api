@@ -90,7 +90,7 @@ func (h *bookingHandler) BookWorkshop(ctx context.Context, input *BookWorkshopRe
 		case usecases.ErrParticipantTypeNotAllowed:
 			return nil, ErrParticipantTypeNotAllowed
 		default:
-			return nil, ErrInternalServerError
+			return nil, ErrInternalServerError(err)
 		}
 	}
 
@@ -117,7 +117,7 @@ func (h *bookingHandler) CancelBooking(ctx context.Context, input *CancelBooking
 		case repositories.ErrBookingNotFound:
 			return nil, ErrBookingNotFound
 		default:
-			return nil, ErrInternalServerError
+			return nil, ErrInternalServerError(err)
 		}
 	}
 
@@ -159,7 +159,7 @@ func (h *bookingHandler) GetMyBookings(ctx context.Context, input *GetMyBookings
 
 	bookings, err := h.bookingUsecase.GetMyBookings(ctx, userID)
 	if err != nil {
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	items := make([]BookingItem, 0, len(bookings))
@@ -202,7 +202,7 @@ func (h *bookingHandler) getUserIDFromContext(ctx context.Context) (int64, error
 		if err == repositories.ErrUserNotFound {
 			return 0, ErrUserNotFound
 		}
-		return 0, ErrInternalServerError
+		return 0, ErrInternalServerError(err)
 	}
 
 	return user.ID, nil

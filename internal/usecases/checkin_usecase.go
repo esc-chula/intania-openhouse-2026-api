@@ -50,7 +50,7 @@ func (u *checkInUsecaseImpl) CheckIn(ctx context.Context, email string, code str
 	prefixCode := code[0:PrefixLength]
 	checkInCode := code[PrefixLength:]
 
-	if _, err := uuid.Parse(checkInCode); err != nil {
+	if err := uuid.Validate(checkInCode); err != nil {
 		return ErrInvalidCodeFormat
 	}
 

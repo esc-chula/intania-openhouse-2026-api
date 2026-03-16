@@ -14,6 +14,10 @@ import (
 )
 
 var (
+	ErrInternalServerError = func(errs ...error) huma.StatusError {
+		return huma.Error500InternalServerError("internal server error", errs...)
+	}
+
 	ErrExtraAttributesRequired = huma.Error400BadRequest("extra attributes required")
 	ErrInvalidParticipantType  = huma.Error400BadRequest("invalid participant type")
 	ErrExtraAttributesInvalid  = huma.Error400BadRequest("extra attributes is invalid")
@@ -24,7 +28,6 @@ var (
 	ErrEmailNotFound           = huma.Error401Unauthorized("email not found in context")
 	ErrUserNotFound            = huma.Error404NotFound("user not found")
 	ErrUserAlreadyExists       = huma.Error400BadRequest("user already exists")
-	ErrInternalServerError     = huma.Error500InternalServerError("internal server error")
 	ErrProfileInfoNotFound     = huma.Error404NotFound("google profile info is not found")
 )
 
@@ -96,7 +99,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		case myValidator.ErrExtraAttributesInvalid:
 			return nil, ErrExtraAttributesInvalid
 		default:
-			return nil, ErrInternalServerError
+			return nil, ErrInternalServerError(err)
 		}
 	}
 
@@ -141,7 +144,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		if err == repositories.ErrUserAlreadyExists {
 			return nil, ErrUserAlreadyExists
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	return nil, nil
@@ -203,7 +206,7 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 		if err == repositories.ErrUserNotFound {
 			return nil, ErrUserNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	return &GetUserResponse{

@@ -83,7 +83,7 @@ func (h *workshopHandler) GetWorkshop(ctx context.Context, input *GetWorkshopReq
 		if err == repositories.ErrWorkshopNotFound {
 			return nil, ErrWorkshopNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	return &GetWorkshopResponse{
@@ -157,7 +157,7 @@ func (h *workshopHandler) ListWorkshop(ctx context.Context, input *ListWorkshopR
 
 	workshops, err := h.usecase.ListWorkshop(ctx, filter)
 	if err != nil {
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	items := make([]WorkshopItem, 0, len(workshops))
