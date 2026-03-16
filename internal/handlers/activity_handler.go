@@ -28,20 +28,16 @@ func InitActivityHandler(api huma.API, usecase usecases.ActivityUsecase, mid mid
 		mid:     mid,
 	}
 
-	activityTag := "activity"
-
 	huma.Get(api, "", handler.ListActivities, func(o *huma.Operation) {
 		o.Summary = "List activities"
 		o.Description = "Retrieve a list of activities with optional search, filtering, and sorting."
 		o.DefaultStatus = 200
-		o.Tags = []string{activityTag}
 	})
 
 	huma.Get(api, "/{id}", handler.GetActivity, func(o *huma.Operation) {
 		o.Summary = "Get activity details"
 		o.Description = "Retrieve detailed information about a specific activity."
 		o.DefaultStatus = 200
-		o.Tags = []string{activityTag}
 	})
 }
 
