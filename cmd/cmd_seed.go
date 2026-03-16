@@ -31,6 +31,14 @@ var seedCmd = &cobra.Command{
 			return err
 		}
 
+		booths := seed.GetBoothSeedData()
+
+		log.Printf("Seeding %d booths...", len(booths))
+		_, err = db.NewInsert().Model(&booths).Exec(ctx)
+		if err != nil {
+			return err
+		}
+
 		log.Println("Seeding completed successfully.")
 		return nil
 	},
