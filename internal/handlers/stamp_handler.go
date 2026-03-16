@@ -91,7 +91,7 @@ type GetUserStampsResponseBody struct {
 
 type StampItemBody struct {
 	ID          int64            `json:"id"`
-	Type        models.StampType `json:"type"`
+	Type        models.StampType `json:"-"`
 	Name        string           `json:"name"`
 	CheckedInAt time.Time        `json:"checked_in_at"`
 }
