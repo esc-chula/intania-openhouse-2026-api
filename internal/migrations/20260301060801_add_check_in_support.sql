@@ -18,6 +18,8 @@ CREATE TABLE booth_checkins (
 
     UNIQUE (user_id, booth_id)
 );
+CREATE INDEX idx_booths_booth_id ON booth_checkins(booth_id);
+CREATE INDEX idx_booths_user_id ON booth_checkins(user_id);
 -- +goose StatementEnd
 
 -- +goose Down

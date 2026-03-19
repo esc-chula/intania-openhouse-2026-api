@@ -16,6 +16,8 @@ CREATE TABLE activities (
 
 CREATE INDEX idx_activities_start_time ON activities(start_time);
 CREATE INDEX idx_activities_end_time ON activities(end_time);
+CREATE INDEX idx_activities_title ON activities(title);
+CREATE INDEX idx_activities_location ON activities(building_name, room_name);
 -- +goose StatementEnd
 
 -- +goose Down

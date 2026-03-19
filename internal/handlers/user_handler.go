@@ -14,6 +14,10 @@ import (
 )
 
 var (
+	ErrInternalServerError = func(errs ...error) huma.StatusError {
+		return huma.Error500InternalServerError("internal server error", errs...)
+	}
+
 	ErrExtraAttributesRequired = huma.Error400BadRequest("extra attributes required")
 	ErrInvalidParticipantType  = huma.Error400BadRequest("invalid participant type")
 	ErrExtraAttributesInvalid  = huma.Error400BadRequest("extra attributes is invalid")
@@ -24,7 +28,6 @@ var (
 	ErrEmailNotFound           = huma.Error401Unauthorized("email not found in context")
 	ErrUserNotFound            = huma.Error404NotFound("user not found")
 	ErrUserAlreadyExists       = huma.Error400BadRequest("user already exists")
-	ErrInternalServerError     = huma.Error500InternalServerError("internal server error")
 	ErrProfileInfoNotFound     = huma.Error404NotFound("google profile info is not found")
 )
 
@@ -57,11 +60,6 @@ func InitUserHandler(api huma.API, usecase usecases.UserUsecase, stampUsecase us
 		o.Tags = []string{userTag}
 	})
 
-	huma.Get(api, "/me/stamps", handler.GetUserStamps, func(o *huma.Operation) {
-		o.Summary = "Get user stamps"
-		o.Description = "Retrieve user stamps and checked in details for booth and workshop."
-		o.Tags = []string{userTag}
-	})
 }
 
 // Request and Response structs
@@ -101,7 +99,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		case myValidator.ErrExtraAttributesInvalid:
 			return nil, ErrExtraAttributesInvalid
 		default:
-			return nil, ErrInternalServerError
+			return nil, ErrInternalServerError(err)
 		}
 	}
 
@@ -146,7 +144,7 @@ func (h *userHandler) CreateUser(ctx context.Context, input *CreateUserRequest) 
 		if err == repositories.ErrUserAlreadyExists {
 			return nil, ErrUserAlreadyExists
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	return nil, nil
@@ -208,7 +206,7 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 		if err == repositories.ErrUserNotFound {
 			return nil, ErrUserNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	return &GetUserResponse{
@@ -229,61 +227,6 @@ func (h *userHandler) GetUser(ctx context.Context, input *GetUserRequest) (*GetU
 			ExtraAttributes:      user.ExtraAttributes,
 			DisplayName:          display_name,
 			PhotoURL:             photo_url,
-		},
-	}, nil
-}
-
-type GetUserStampsRequest struct{}
-
-type GetUserStampsResponse struct {
-	Body GetUserStampsResponseBody `json:"body"`
-}
-
-type GetUserStampsResponseBody struct {
-	TotalCount int64           `json:"total_count"`
-	Stamps     []StampItemBody `json:"stamps"`
-}
-
-type StampItemBody struct {
-	ID          int64  `json:"id"`
-	Type        string `json:"type"`
-	Name        string `json:"name"`
-	CheckedInAt string `json:"checked_in_at"`
-}
-
-func (h *userHandler) GetUserStamps(ctx context.Context, input *GetUserStampsRequest) (*GetUserStampsResponse, error) {
-	email, ok := ctx.Value("email").(string)
-	if !ok || email == "" {
-		return nil, ErrEmailNotFound
-	}
-
-	user, err := h.usecase.GetUser(ctx, email, []string{"id"})
-	if err != nil {
-		if err == repositories.ErrUserNotFound {
-			return nil, ErrUserNotFound
-		}
-		return nil, ErrInternalServerError
-	}
-
-	stamps, err := h.stampUsecase.GetUserStamps(ctx, user.ID)
-	if err != nil {
-		return nil, ErrInternalServerError
-	}
-
-	items := make([]StampItemBody, 0, len(stamps.Stamps))
-	for _, s := range stamps.Stamps {
-		items = append(items, StampItemBody{
-			ID:          s.ID,
-			Type:        string(s.Type),
-			Name:        s.Name,
-			CheckedInAt: s.CheckedInAt.Format("2006-01-02T15:04:05Z07:00"),
-		})
-	}
-
-	return &GetUserStampsResponse{
-		Body: GetUserStampsResponseBody{
-			TotalCount: stamps.TotalCount,
-			Stamps:     items,
 		},
 	}, nil
 }

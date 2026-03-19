@@ -8,8 +8,9 @@ import (
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/baserepo"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 var (
@@ -43,7 +44,7 @@ func (r *bookingRepoImpl) CreateBooking(ctx context.Context, booking *models.Boo
 	return r.exec.Run(ctx, func(idb bun.IDB) error {
 		_, err := idb.NewInsert().Model(booking).Exec(ctx)
 		if err != nil {
-			if pgErr, ok := err.(pgdriver.Error); ok && pgErr.IntegrityViolation() && pgErr.Field('C') == "23505" {
+			if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == pgerrcode.UniqueViolation {
 				return ErrAlreadyBooked
 			}
 			return err
@@ -171,6 +172,7 @@ func (r *bookingRepoImpl) GetAttendedWorkshopsForUser(ctx context.Context, userI
 			ColumnExpr("ws.id AS id").
 			ColumnExpr("ws.name AS name").
 			ColumnExpr("bk.checked_in_at AS checked_in_at").
+			ColumnExpr("ws.category AS type").
 			Join("JOIN workshops AS ws ON ws.id = bk.workshop_id").
 			Where("bk.user_id = ?", userID).
 			Where("bk.status = ?", models.StatusAttended).
@@ -181,10 +183,6 @@ func (r *bookingRepoImpl) GetAttendedWorkshopsForUser(ctx context.Context, userI
 			return stamps, nil
 		}
 		return nil, err
-	}
-	// Set type for all items
-	for i := range stamps {
-		stamps[i].Type = models.StampTypeWorkshop
 	}
 	return stamps, nil
 }

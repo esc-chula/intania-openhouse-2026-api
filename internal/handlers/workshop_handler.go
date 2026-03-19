@@ -56,17 +56,17 @@ type GetWorkshopResponse struct {
 	Body GetWorkshopResponseBody `json:"body"`
 }
 type GetWorkshopResponseBody struct {
-	ID              int64           `json:"id,omitempty"`
-	Name            string          `json:"name,omitempty"`
-	Description     string          `json:"description,omitempty"`
-	Category        models.Category `json:"category,omitempty"`
-	Affiliation     string          `json:"affiliation,omitempty"`
-	EventDate       string          `json:"event_date,omitempty"`
-	StartTime       time.Time       `json:"start_time,omitempty"`
-	EndTime         time.Time       `json:"end_time,omitempty"`
-	Location        string          `json:"location,omitempty"`
-	TotalSeats      int             `json:"total_seats,omitempty"`
-	RegisteredCount int             `json:"registered_count,omitempty"`
+	ID              int64                   `json:"id,omitempty"`
+	Name            string                  `json:"name,omitempty"`
+	Description     string                  `json:"description,omitempty"`
+	Category        models.WorkShopCategory `json:"category,omitempty"`
+	Affiliation     string                  `json:"affiliation,omitempty"`
+	EventDate       string                  `json:"event_date,omitempty"`
+	StartTime       time.Time               `json:"start_time,omitempty"`
+	EndTime         time.Time               `json:"end_time,omitempty"`
+	Location        string                  `json:"location,omitempty"`
+	TotalSeats      int                     `json:"total_seats,omitempty"`
+	RegisteredCount int                     `json:"registered_count,omitempty"`
 	Image           string          `json:"image,omitempty"`
 }
 
@@ -84,7 +84,7 @@ func (h *workshopHandler) GetWorkshop(ctx context.Context, input *GetWorkshopReq
 		if err == repositories.ErrWorkshopNotFound {
 			return nil, ErrWorkshopNotFound
 		}
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	return &GetWorkshopResponse{
@@ -120,17 +120,17 @@ type ListWorkshopResponseBody struct {
 	Workshops []WorkshopItem `json:"workshops"`
 }
 type WorkshopItem struct {
-	ID              int64           `json:"id"`
-	Name            string          `json:"name"`
-	Description     string          `json:"description"`
-	Category        models.Category `json:"category"`
-	Affiliation     string          `json:"affiliation"`
-	EventDate       string          `json:"event_date"`
-	StartTime       time.Time       `json:"start_time"`
-	EndTime         time.Time       `json:"end_time"`
-	Location        string          `json:"location"`
-	TotalSeats      int             `json:"total_seats"`
-	RegisteredCount int             `json:"registered_count"`
+	ID              int64                   `json:"id"`
+	Name            string                  `json:"name"`
+	Description     string                  `json:"description"`
+	Category        models.WorkShopCategory `json:"category"`
+	Affiliation     string                  `json:"affiliation"`
+	EventDate       string                  `json:"event_date"`
+	StartTime       time.Time               `json:"start_time"`
+	EndTime         time.Time               `json:"end_time"`
+	Location        string                  `json:"location"`
+	TotalSeats      int                     `json:"total_seats"`
+	RegisteredCount int                     `json:"registered_count"`
 	Image           string          `json:"image"`
 }
 
@@ -160,7 +160,7 @@ func (h *workshopHandler) ListWorkshop(ctx context.Context, input *ListWorkshopR
 
 	workshops, err := h.usecase.ListWorkshop(ctx, filter)
 	if err != nil {
-		return nil, ErrInternalServerError
+		return nil, ErrInternalServerError(err)
 	}
 
 	items := make([]WorkshopItem, 0, len(workshops))

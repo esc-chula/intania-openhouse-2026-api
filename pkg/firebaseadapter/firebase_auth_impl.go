@@ -17,7 +17,7 @@ type firebaseAuthImpl struct {
 func InitFirebaseAuthAdapter(ctx context.Context, cfg config.Config) FirebaseAdapter {
 	var opts []option.ClientOption
 	if !cfg.App().IsProduction {
-		opts = append(opts, option.WithCredentialsFile(cfg.Firebase().ServiceAccountKeyFile))
+		opts = append(opts, option.WithAuthCredentialsFile(option.ServiceAccount, cfg.Firebase().ServiceAccountKeyFile))
 	}
 	app, err := firebase.NewApp(ctx, nil, opts...)
 	if err != nil {
