@@ -94,8 +94,8 @@ func transformActivityCsv() {
 	writer.Write(newHeader)
 
 	for _, row := range input {
-		fullStart := fmt.Sprintf("%s %s", row.EventDate, row.StartTime)
-		fullEnd := fmt.Sprintf("%s %s", row.EventDate, row.EndTime)
+		fullStart := fmt.Sprintf("%s %s+07", row.EventDate, row.StartTime)
+		fullEnd := fmt.Sprintf("%s %s+07", row.EventDate, row.EndTime)
 
 		newRow := []string{
 			row.Title,
@@ -190,8 +190,8 @@ func transformWorkshopCsv() {
 	writer.Write(newHeader)
 
 	for i, row := range input {
-		fullStart := fmt.Sprintf("%s %s", row.EventDate, row.StartTime)
-		fullEnd := fmt.Sprintf("%s %s", row.EventDate, row.EndTime)
+		fullStart := fmt.Sprintf("%s %s+07", row.EventDate, row.StartTime)
+		fullEnd := fmt.Sprintf("%s %s+07", row.EventDate, row.EndTime)
 
 		var category string
 		switch row.Category {
