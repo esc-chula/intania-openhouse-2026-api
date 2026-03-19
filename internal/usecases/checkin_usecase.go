@@ -37,9 +37,8 @@ func NewCheckInUsecase(
 }
 
 const (
-	PrefixWorkshop = "W-"
-	PrefixBooth    = "B-"
-	PrefixLength   = 2
+	PrefixBooth  = "B-"
+	PrefixLength = 2
 )
 
 func (u *checkInUsecaseImpl) CheckIn(ctx context.Context, email string, code string) error {
@@ -55,8 +54,6 @@ func (u *checkInUsecaseImpl) CheckIn(ctx context.Context, email string, code str
 	}
 
 	switch prefixCode {
-	case PrefixWorkshop:
-		return u.handleWorkshopCheckIn(ctx, email, checkInCode)
 	case PrefixBooth:
 		return u.handleBoothCheckIn(ctx, email, checkInCode)
 	default:
@@ -64,6 +61,7 @@ func (u *checkInUsecaseImpl) CheckIn(ctx context.Context, email string, code str
 	}
 }
 
+// Deprecated: not used anymore
 func (u *checkInUsecaseImpl) handleWorkshopCheckIn(ctx context.Context, email string, checkInCode string) error {
 	bookingID, bookingStatus, err := u.bookingRepo.GetBookingIDAndStatus(ctx, email, checkInCode)
 	if err != nil {
