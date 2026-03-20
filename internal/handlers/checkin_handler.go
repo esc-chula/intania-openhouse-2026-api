@@ -34,7 +34,7 @@ func InitCheckInHandler(
 		errDoc, errCodes := buildErrorsDocumentation(checkInErrorList)
 
 		o.Summary = "Check-in with code"
-		o.Description = "The code should be formatted in `<type>-<uuid>` where <type> is either `W` for workshop or `B` for booth, and <uuid> is the identifier for workshop and booth"
+		o.Description = "The code should be formatted in `<type>-<uuid>` where <type> is `B` for booth, and <uuid> is the identifier for the booth"
 		o.Description += errDoc
 		o.DefaultStatus = 201
 		o.Tags = []string{checkInTag}
