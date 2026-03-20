@@ -7,6 +7,7 @@ import (
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/gocarina/gocsv"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,8 +21,8 @@ const (
 )
 
 const (
-	CopyActivityCommand = `COPY activities (title, description, start_time, end_time, building_name, floor, room_name, image) FROM '/home/postgres_activity.csv' DELIMITER ',' CSV HEADER;`
-	CopyBoothCommand    = `COPY booths (name, category) FROM '/home/postgres_booth.csv' DELIMITER ',' CSV HEADER;`
+	CopyActivityCommand = `COPY activities (title, description, event_date, start_time, end_time, building_name, floor, room_name, image, link) FROM '/home/postgres_activity.csv' DELIMITER ',' CSV HEADER;`
+	CopyBoothCommand    = `COPY booths (name, category, check_in_code) FROM '/home/postgres_booth.csv' DELIMITER ',' CSV HEADER;`
 	CopyWorkshopCommand = `COPY workshops (name, description, category, affiliation, event_date, start_time, end_time, location, total_seats, image) FROM '/home/postgres_workshop.csv' DELIMITER ',' CSV HEADER;`
 )
 
@@ -39,8 +40,9 @@ type ActivityInputRow struct {
 }
 
 type BoothInputRow struct {
-	Name string `csv:"name"`
-	Type string `csv:"type"`
+	Name                  string `csv:"name"`
+	Type                  string `csv:"type"`
+	CheckInCodeWithPrefix string `csv:"check_in_code"`
 }
 
 type WorkshopInputRow struct {
@@ -90,7 +92,7 @@ func transformActivityCsv() {
 	writer := csv.NewWriter(outputFile)
 	defer writer.Flush()
 
-	newHeader := []string{"title", "description", "start_time", "end_time", "building_name", "floor", "room_name", "image"}
+	newHeader := []string{"title", "description", "event_date", "start_time", "end_time", "building_name", "floor", "room_name", "image", "link"}
 	writer.Write(newHeader)
 
 	for _, row := range input {
@@ -100,12 +102,14 @@ func transformActivityCsv() {
 		newRow := []string{
 			row.Title,
 			row.Description,
+			row.EventDate,
 			fullStart,
 			fullEnd,
 			row.BuildingName,
 			row.Floor,
 			row.RoomName,
 			row.ImageUrl,
+			row.Link,
 		}
 		writer.Write(newRow)
 	}
@@ -136,7 +140,7 @@ func transformBoothCsv() {
 	writer := csv.NewWriter(outputFile)
 	defer writer.Flush()
 
-	newHeader := []string{"name", "category"}
+	newHeader := []string{"name", "category", "check_in_code"}
 	writer.Write(newHeader)
 
 	for i, row := range input {
@@ -153,9 +157,20 @@ func transformBoothCsv() {
 			continue
 		}
 
+		if len(row.CheckInCodeWithPrefix) <= 2 || row.CheckInCodeWithPrefix[0:2] != "B-" {
+			fmt.Printf("Invalid check_in_code %s on line %d, row data is %v", row.CheckInCodeWithPrefix, i+2, row)
+			continue
+		}
+		checkInCode := row.CheckInCodeWithPrefix[2:]
+		if err := uuid.Validate(checkInCode); err != nil {
+			fmt.Printf("Invalid check_in_code uuid format %s on line %d, row data is %v (%v)", checkInCode, i+2, row, err)
+			continue
+		}
+
 		newRow := []string{
 			row.Name,
 			category,
+			checkInCode,
 		}
 		writer.Write(newRow)
 	}
