@@ -19,7 +19,7 @@ var (
 )
 
 type BoothRepo interface {
-	GetBoothIDFromCheckInCode(ctx context.Context, checkInCode string) (int64, error)
+	GetBoothFromCheckInCode(ctx context.Context, checkInCode string) (*models.Booth, error)
 	CreateBoothCheckIn(ctx context.Context, userID int64, boothID int64) error
 	GetBoothCheckInsForUser(ctx context.Context, userID int64) ([]models.StampItem, error)
 }
@@ -34,24 +34,23 @@ func NewBoothRepo(db *bun.DB) BoothRepo {
 	}
 }
 
-func (r *boothRepoImpl) GetBoothIDFromCheckInCode(ctx context.Context, checkInCode string) (int64, error) {
-	var boothID int64
+func (r *boothRepoImpl) GetBoothFromCheckInCode(ctx context.Context, checkInCode string) (*models.Booth, error) {
+	var booth models.Booth
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
 		return idb.
 			NewSelect().
 			Model((*models.Booth)(nil)).
-			Column("id").
 			Where("check_in_code = ?", checkInCode).
-			Scan(ctx, &boothID)
+			Scan(ctx, &booth)
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, ErrBoothNotFound
+			return nil, ErrBoothNotFound
 		}
-		return 0, err
+		return nil, err
 	}
 
-	return boothID, nil
+	return &booth, nil
 }
 
 func (r *boothRepoImpl) CreateBoothCheckIn(ctx context.Context, userID int64, boothID int64) error {

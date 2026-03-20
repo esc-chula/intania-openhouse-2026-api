@@ -15,7 +15,7 @@ var (
 )
 
 type CheckInUsecase interface {
-	CheckIn(ctx context.Context, email string, code string) error
+	CheckInBooth(ctx context.Context, email string, code string) (*models.Booth, error)
 }
 
 type checkInUsecaseImpl struct {
@@ -41,54 +41,36 @@ const (
 	PrefixLength = 2
 )
 
-func (u *checkInUsecaseImpl) CheckIn(ctx context.Context, email string, code string) error {
+func (u *checkInUsecaseImpl) CheckInBooth(ctx context.Context, email string, code string) (*models.Booth, error) {
 	if len(code) <= PrefixLength {
-		return ErrInvalidCodeFormat
+		return nil, ErrInvalidCodeFormat
 	}
 
 	prefixCode := code[0:PrefixLength]
 	checkInCode := code[PrefixLength:]
 
 	if err := uuid.Validate(checkInCode); err != nil {
-		return ErrInvalidCodeFormat
+		return nil, ErrInvalidCodeFormat
 	}
 
-	switch prefixCode {
-	case PrefixBooth:
-		return u.handleBoothCheckIn(ctx, email, checkInCode)
-	default:
-		return ErrInvalidCodeFormat
-	}
-}
-
-// Deprecated: not used anymore
-func (u *checkInUsecaseImpl) handleWorkshopCheckIn(ctx context.Context, email string, checkInCode string) error {
-	bookingID, bookingStatus, err := u.bookingRepo.GetBookingIDAndStatus(ctx, email, checkInCode)
-	if err != nil {
-		return err
+	if prefixCode != PrefixBooth {
+		return nil, ErrInvalidCodeFormat
 	}
 
-	if bookingStatus != models.StatusConfirmed {
-		if bookingStatus == models.StatusAttended {
-			return ErrAlreadyAttended
-		}
-		return repositories.ErrInvalidBookingStatus
-	}
-
-	return u.bookingRepo.AttendBooking(ctx, bookingID)
-}
-
-func (u *checkInUsecaseImpl) handleBoothCheckIn(ctx context.Context, email string, checkInCode string) error {
 	user, err := u.userRepo.GetUserByEmail(ctx, email, []string{"id"})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	userID := user.ID
 
-	boothID, err := u.boothRepo.GetBoothIDFromCheckInCode(ctx, checkInCode)
+	booth, err := u.boothRepo.GetBoothFromCheckInCode(ctx, checkInCode)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return u.boothRepo.CreateBoothCheckIn(ctx, userID, boothID)
+	if err := u.boothRepo.CreateBoothCheckIn(ctx, userID, booth.ID); err != nil {
+		return nil, err
+	}
+
+	return booth, nil
 }
