@@ -26,7 +26,7 @@ type Workshop struct {
 	Location        string           `bun:"location"                 json:"location"`
 	TotalSeats      int              `bun:"total_seats"              json:"total_seats"`
 	RegisteredCount int              `bun:"registered_count"         json:"registered_count"`
-	Image           string                  `bun:"image"                    json:"image"`
+	Image           string           `bun:"image"                    json:"image"`
 	CheckInCode     string           `bun:"check_in_code,nullzero"   json:"-"`
 }
 
@@ -60,16 +60,17 @@ type Booking struct {
 
 // BookingWithWorkshop is used for returning booking details with workshop info.
 type BookingWithWorkshop struct {
-	ID              int64      `bun:"id"            json:"id"`
-	WorkshopID      int64      `bun:"workshop_id"   json:"workshop_id"`
-	Status          Status     `bun:"status"        json:"status"`
-	CreatedAt       time.Time  `bun:"created_at"    json:"created_at"`
-	CheckedInAt     *time.Time `bun:"checked_in_at" json:"checked_in_at"`
-	WorkshopName    string     `bun:"workshop_name" json:"workshop_name"`
-	EventDate       string     `bun:"event_date"    json:"event_date"`
-	StartTime       time.Time  `bun:"start_time"    json:"start_time"`
-	EndTime         time.Time  `bun:"end_time"      json:"end_time"`
-	Location        string     `bun:"location"      json:"location"`
-	Affiliation  string     `bun:"affiliation"   json:"affiliation"`
-	RegisteredCount int        `bun:"registered_count"         json:"registered_count"`
+	ID              int64      `bun:"id"               json:"id"`
+	WorkshopID      int64      `bun:"workshop_id"      json:"workshop_id"`
+	Status          Status     `bun:"status"           json:"status"`
+	CreatedAt       time.Time  `bun:"created_at"       json:"created_at"`
+	CheckedInAt     *time.Time `bun:"checked_in_at"    json:"checked_in_at"`
+	WorkshopName    string     `bun:"workshop_name"    json:"workshop_name"`
+	EventDate       string     `bun:"event_date"       json:"event_date"`
+	StartTime       time.Time  `bun:"start_time"       json:"start_time"`
+	EndTime         time.Time  `bun:"end_time"         json:"end_time"`
+	Location        string     `bun:"location"         json:"location"`
+	Affiliation     string     `bun:"affiliation"      json:"affiliation"`
+	RegisteredCount int        `bun:"registered_count" json:"registered_count"`
+	TotalSeats      int        `bun:"total_seats"      json:"total_seats"`
 }

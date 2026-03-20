@@ -145,13 +145,14 @@ type BookingItem struct {
 }
 
 type BookingWorkshopInfo struct {
-	Name              string `json:"name"`
-	EventDate         string `json:"event_date"`
-	StartTime         string `json:"start_time"`
-	EndTime           string `json:"end_time"`
-	Location          string `json:"location"`
-	Affiliation string `json:"affiliation"`
+	Name            string `json:"name"`
+	EventDate       string `json:"event_date"`
+	StartTime       string `json:"start_time"`
+	EndTime         string `json:"end_time"`
+	Location        string `json:"location"`
+	Affiliation     string `json:"affiliation"`
 	RegisteredCount int    `json:"registered_count"`
+	TotalSeats      int    `json:"total_seats"`
 }
 
 func (h *bookingHandler) GetMyBookings(ctx context.Context, input *GetMyBookingsRequest) (*GetMyBookingsResponse, error) {
@@ -173,13 +174,14 @@ func (h *bookingHandler) GetMyBookings(ctx context.Context, input *GetMyBookings
 			Status:     b.Status,
 			CreatedAt:  b.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 			Workshop: BookingWorkshopInfo{
-				Name:              b.WorkshopName,
-				EventDate:         b.EventDate,
-				StartTime:         b.StartTime.Format("15:04"),
-				EndTime:           b.EndTime.Format("15:04"),
-				Location:          b.Location,
-				Affiliation: b.Affiliation,
+				Name:            b.WorkshopName,
+				EventDate:       b.EventDate,
+				StartTime:       b.StartTime.Format("15:04"),
+				EndTime:         b.EndTime.Format("15:04"),
+				Location:        b.Location,
+				Affiliation:     b.Affiliation,
 				RegisteredCount: b.RegisteredCount,
+				TotalSeats:      b.TotalSeats,
 			},
 		}
 		if b.CheckedInAt != nil {
