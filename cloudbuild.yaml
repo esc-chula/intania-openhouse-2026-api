@@ -6,7 +6,7 @@ steps:
   args:
   - 'build'
   - '--target'
-  - 'normal'
+  - 'prod'
   - '-t'
   - '$_IMAGE_NAME:$COMMIT_SHA'
   - '.'
