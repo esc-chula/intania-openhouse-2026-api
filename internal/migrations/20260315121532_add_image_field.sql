@@ -1,9 +1,25 @@
 -- +goose Up
 -- +goose StatementBegin
-ALTER TABLE workshops ADD COLUMN IF NOT EXISTS image TEXT;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'workshops' AND column_name = 'image'
+  ) THEN
+    ALTER TABLE workshops ADD COLUMN image TEXT;
+  END IF;
+END$$;
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-ALTER TABLE workshops DROP COLUMN IF NOT EXISTS image;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'workshops' AND column_name = 'image'
+  ) THEN
+    ALTER TABLE workshops DROP COLUMN image;
+  END IF;
+END$$;
 -- +goose StatementEnd
