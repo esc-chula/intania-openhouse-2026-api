@@ -66,7 +66,7 @@ type ActivityItem struct {
 	Title        string    `json:"title"`
 	StartTime    time.Time `json:"start_time"`
 	EndTime      time.Time `json:"end_time"`
-	EventDate    time.Time `json:"event_date"`
+	EventDate    string    `json:"event_date"`
 	BuildingName string    `json:"building_name,omitempty"`
 	Floor        string    `json:"floor,omitempty"`
 	RoomName     string    `json:"room_name,omitempty"`

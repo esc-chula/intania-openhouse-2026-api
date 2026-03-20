@@ -13,7 +13,7 @@ type Activity struct {
 	Description   string    `bun:"description,notnull" json:"description"`
 	StartTime     time.Time `bun:"start_time,notnull" json:"start_time"`
 	EndTime       time.Time `bun:"end_time,notnull" json:"end_time"`
-	EventDate     time.Time `bun:"event_date,notnull" json:"event_date"`
+	EventDate     string    `bun:"event_date,notnull" json:"event_date"` // Date in format `2006-01-02`
 	BuildingName  string    `bun:"building_name" json:"building_name,omitempty"`
 	Floor         string    `bun:"floor" json:"floor,omitempty"`
 	RoomName      string    `bun:"room_name" json:"room_name,omitempty"`
