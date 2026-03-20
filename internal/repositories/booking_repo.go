@@ -88,6 +88,7 @@ func (r *bookingRepoImpl) GetUserBookings(ctx context.Context, userID int64) ([]
 			ColumnExpr("ws.end_time").
 			ColumnExpr("ws.location").
 			ColumnExpr("ws.affiliation").
+			ColumnExpr("ws.registered_count").
 			Join("JOIN workshops AS ws ON ws.id = bk.workshop_id").
 			Where("bk.user_id = ?", userID).
 			Where("bk.status != ?", models.StatusCancelled).

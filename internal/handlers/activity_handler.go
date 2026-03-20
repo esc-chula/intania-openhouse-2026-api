@@ -66,12 +66,14 @@ type ActivityItem struct {
 	Title        string    `json:"title"`
 	StartTime    time.Time `json:"start_time"`
 	EndTime      time.Time `json:"end_time"`
+	EventDate    string    `json:"event_date"`
 	BuildingName string    `json:"building_name,omitempty"`
 	Floor        string    `json:"floor,omitempty"`
 	RoomName     string    `json:"room_name,omitempty"`
 	Description  string    `json:"description"`
 	Image        string    `json:"image,omitempty"`
 	IsHappening  bool      `json:"is_happening"`
+	Link         string    `json:"link,omitempty"`
 }
 
 func (h *activityHandler) ListActivities(ctx context.Context, input *ListActivitiesRequest) (*ListActivitiesResponse, error) {
@@ -96,12 +98,14 @@ func (h *activityHandler) ListActivities(ctx context.Context, input *ListActivit
 			Title:        a.Title,
 			StartTime:    a.StartTime,
 			EndTime:      a.EndTime,
+			EventDate:    a.EventDate,
 			BuildingName: a.BuildingName,
 			Floor:        a.Floor,
 			RoomName:     a.RoomName,
 			Description:  a.Description,
 			Image:        a.Image,
 			IsHappening:  now.After(a.StartTime) && now.Before(a.EndTime),
+			Link:         a.Link,
 		})
 	}
 
@@ -136,12 +140,14 @@ func (h *activityHandler) GetActivity(ctx context.Context, input *GetActivityReq
 			Title:        activity.Title,
 			StartTime:    activity.StartTime,
 			EndTime:      activity.EndTime,
+			EventDate:    activity.EventDate,
 			BuildingName: activity.BuildingName,
 			Floor:        activity.Floor,
 			RoomName:     activity.RoomName,
 			Description:  activity.Description,
 			Image:        activity.Image,
 			IsHappening:  now.After(activity.StartTime) && now.Before(activity.EndTime),
+			Link:         activity.Link,
 		},
 	}, nil
 }
