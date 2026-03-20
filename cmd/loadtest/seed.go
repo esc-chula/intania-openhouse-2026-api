@@ -72,9 +72,21 @@ func seedData(ctx context.Context, db *bun.DB) *SeedData {
 
 	booths := make([]models.Booth, MAX_DATA_ITEM)
 	for i := range booths {
+		categoryIndex := rand.Intn(3)
+		var category models.BoothCategory
+		switch categoryIndex {
+		case 0:
+			category = models.BoothCategoryDepartment
+		case 1:
+			category = models.BoothCategoryClub
+		case 2:
+			category = models.BoothCategoryExhibition
+		}
+
 		booths[i] = models.Booth{
 			ID:          int64(i + 1),
 			Name:        fmt.Sprintf("Booth %d", i),
+			Category:    category,
 			CheckInCode: uuid.NewString(),
 		}
 	}

@@ -26,7 +26,7 @@ type Workshop struct {
 	Location        string           `bun:"location"                 json:"location"`
 	TotalSeats      int              `bun:"total_seats"              json:"total_seats"`
 	RegisteredCount int              `bun:"registered_count"         json:"registered_count"`
-	Image           string           `bun:"image"                    json:"image"`
+	Image           string                  `bun:"image"                    json:"image"`
 	CheckInCode     string           `bun:"check_in_code,nullzero"   json:"-"`
 }
 
@@ -70,5 +70,6 @@ type BookingWithWorkshop struct {
 	StartTime       time.Time  `bun:"start_time"    json:"start_time"`
 	EndTime         time.Time  `bun:"end_time"      json:"end_time"`
 	Location        string     `bun:"location"      json:"location"`
+	Affiliation  string     `bun:"affiliation"   json:"affiliation"`
 	RegisteredCount int        `bun:"registered_count"         json:"registered_count"`
 }

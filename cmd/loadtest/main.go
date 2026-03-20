@@ -71,6 +71,8 @@ func NewCustomTargeter(baseURL string, auth string, data *SeedData) vegeta.Targe
 	totalWorkshops := len(data.Workshops)
 	totalBooths := len(data.Booths)
 
+	redemptionList := []string{"department", "club", "exhibition"}
+
 	return func(t *vegeta.Target) error {
 		if t == nil {
 			return vegeta.ErrNilTarget
@@ -79,6 +81,7 @@ func NewCustomTargeter(baseURL string, auth string, data *SeedData) vegeta.Targe
 		randWorkshop := data.Workshops[rand.Intn(totalWorkshops)]
 		randBooth := data.Booths[rand.Intn(totalBooths)]
 		randActivity := data.Booths[rand.Intn(totalActivities)]
+		randRedemption := redemptionList[rand.Intn(3)]
 
 		// Randomly select an endpoint to attack
 		endpoints := []struct {
@@ -111,8 +114,6 @@ func NewCustomTargeter(baseURL string, auth string, data *SeedData) vegeta.Targe
 
 			// GetUser
 			{"GET", "/users/me", nil},
-			// GetUserStamps
-			{"GET", "/users/me/stamps", nil},
 
 			// GetActivity
 			{"GET", fmt.Sprintf("/activities/%d", randActivity.ID), nil},
@@ -131,9 +132,15 @@ func NewCustomTargeter(baseURL string, auth string, data *SeedData) vegeta.Targe
 			// CancelBooking
 			{"DELETE", fmt.Sprintf("/workshops/%d/book", randWorkshop.ID), nil},
 
-			// CheckIn (for both workshop and booth)
-			{"POST", "/check-in", fmt.Appendf(nil, `{"code":"%s"}`, "W-"+randWorkshop.CheckInCode)},
+			// CheckIn
 			{"POST", "/check-in", fmt.Appendf(nil, `{"code":"%s"}`, "B-"+randBooth.CheckInCode)},
+
+			// GetUserStamps
+			{"GET", "/users/me/stamps", nil},
+			// GetRedemptionStatus
+			{"GET", "/users/me/redemption-status", nil},
+			// RedeemStamps
+			{"POST", "/stamps/redemptions" + "?category=" + randRedemption, nil},
 		}
 
 		selected := endpoints[rand.Intn(len(endpoints))]
