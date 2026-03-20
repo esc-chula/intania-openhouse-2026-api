@@ -17,6 +17,8 @@ func GetActivitySeedData() []models.Activity {
 			Floor:        "1",
 			RoomName:     "Hall of Intania",
 			Image:        "https://example.com/opening.jpg",
+			EventDate:    time.Date(2026, 3, 28, 0, 0, 0, 0, time.Local),
+			Link:         "https://example.com/events/opening-ceremony",
 		},
 		{
 			Title:        "Robotics Workshop",
@@ -27,6 +29,8 @@ func GetActivitySeedData() []models.Activity {
 			Floor:        "G",
 			RoomName:     "Robotics Lab",
 			Image:        "https://example.com/robotics.jpg",
+			EventDate:    time.Date(2026, 3, 28, 0, 0, 0, 0, time.Local),
+			Link:         "https://example.com/events/robotics-workshop",
 		},
 		{
 			Title:        "Engineering Fair",
@@ -37,6 +41,8 @@ func GetActivitySeedData() []models.Activity {
 			Floor:        "1-2",
 			RoomName:     "Main Hall",
 			Image:        "https://example.com/fair.jpg",
+			EventDate:    time.Date(2026, 3, 28, 0, 0, 0, 0, time.Local),
+			Link:         "https://example.com/events/engineering-fair",
 		},
 		// Past Event
 		{
@@ -48,6 +54,8 @@ func GetActivitySeedData() []models.Activity {
 			Floor:        "1",
 			RoomName:     "Hall of Intania",
 			Image:        "https://example.com/orientation.jpg",
+			EventDate:    time.Date(2026, 2, 1, 0, 0, 0, 0, time.Local),
+			Link:         "https://example.com/events/volunteer-orientation",
 		},
 		// Happening Now
 		{
@@ -59,6 +67,8 @@ func GetActivitySeedData() []models.Activity {
 			Floor:        "3",
 			RoomName:     "Tech Hub",
 			Image:        "https://example.com/setup.jpg",
+			EventDate:    time.Date(2026, 3, 4, 0, 0, 0, 0, time.Local),
+			Link:         "https://example.com/events/hackathon-setup",
 		},
 		// Future Event
 		{
@@ -70,6 +80,8 @@ func GetActivitySeedData() []models.Activity {
 			Floor:        "G",
 			RoomName:     "Storage Site X",
 			Image:        "https://example.com/inspection.jpg",
+			EventDate:    time.Date(2026, 4, 15, 0, 0, 0, 0, time.Local),
+			Link:         "https://example.com/events/props-inspection",
 		},
 	}
 }
