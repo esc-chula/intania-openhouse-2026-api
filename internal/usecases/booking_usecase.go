@@ -46,7 +46,7 @@ func NewBookingUsecase(
 }
 
 func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, userEmail string, workshopID int64) error {
-	workshop, err := u.workshopRepo.GetWorkshopById(ctx, workshopID, []string{"id", "event_date", "start_time", "end_time", "total_seats", "registered_count"})
+	workshop, err := u.workshopRepo.GetWorkshopById(ctx, workshopID, []string{"id", "event_date", "start_time", "end_time", "total_seats", "registered_count", "category"})
 	if err != nil {
 		return err
 	}
