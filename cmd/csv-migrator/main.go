@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/gocarina/gocsv"
@@ -21,9 +22,16 @@ const (
 )
 
 const (
-	CopyActivityCommand = `COPY activities (title, description, event_date, start_time, end_time, building_name, floor, room_name, image, link) FROM '/home/postgres_activity.csv' DELIMITER ',' CSV HEADER;`
-	CopyBoothCommand    = `COPY booths (name, category, check_in_code) FROM '/home/postgres_booth.csv' DELIMITER ',' CSV HEADER;`
-	CopyWorkshopCommand = `COPY workshops (name, description, category, affiliation, event_date, start_time, end_time, location, total_seats, image) FROM '/home/postgres_workshop.csv' DELIMITER ',' CSV HEADER;`
+	TruncateCommand = `
+TRUNCATE TABLE workshops RESTART IDENTITY CASCADE;
+TRUNCATE TABLE activities RESTART IDENTITY CASCADE;
+TRUNCATE TABLE booths RESTART IDENTITY CASCADE;
+`
+	CopyCommand = `
+COPY activities (title, description, event_date, start_time, end_time, building_name, floor, room_name, image, link) FROM '/home/postgres_activity.csv' DELIMITER ',' CSV HEADER;
+COPY booths (name, category, check_in_code) FROM '/home/postgres_booth.csv' DELIMITER ',' CSV HEADER;
+COPY workshops (name, description, category, affiliation, event_date, start_time, end_time, location, total_seats, image) FROM '/home/postgres_workshop.csv' DELIMITER ',' CSV HEADER;
+`
 )
 
 type ActivityInputRow struct {
@@ -95,9 +103,20 @@ func transformActivityCsv() {
 	newHeader := []string{"title", "description", "event_date", "start_time", "end_time", "building_name", "floor", "room_name", "image", "link"}
 	writer.Write(newHeader)
 
-	for _, row := range input {
+	for i, row := range input {
 		fullStart := fmt.Sprintf("%s %s+07", row.EventDate, row.StartTime)
 		fullEnd := fmt.Sprintf("%s %s+07", row.EventDate, row.EndTime)
+
+		imagePath := ""
+		if row.ImageUrl != "" {
+			fileId, found := strings.CutPrefix(row.ImageUrl, "https://drive.google.com/file/d/")
+			if !found {
+				fmt.Printf("Invalid activity image url %q on line %d\n", row.ImageUrl, i+2)
+				continue
+			}
+			fileId = strings.Split(fileId, "/")[0]
+			imagePath = fmt.Sprintf("/activity/%s", fileId)
+		}
 
 		newRow := []string{
 			row.Title,
@@ -108,7 +127,7 @@ func transformActivityCsv() {
 			row.BuildingName,
 			row.Floor,
 			row.RoomName,
-			row.ImageUrl,
+			imagePath,
 			row.Link,
 		}
 		writer.Write(newRow)
@@ -153,17 +172,17 @@ func transformBoothCsv() {
 		case "Innovation exhibition":
 			category = string(models.BoothCategoryExhibition)
 		default:
-			fmt.Printf("Invalid booth type %s on line %d, row data is %v", row.Type, i+2, row)
+			fmt.Printf("Invalid booth type %s on line %d, row data is %v\n", row.Type, i+2, row)
 			continue
 		}
 
 		if len(row.CheckInCodeWithPrefix) <= 2 || row.CheckInCodeWithPrefix[0:2] != "B-" {
-			fmt.Printf("Invalid check_in_code %s on line %d, row data is %v", row.CheckInCodeWithPrefix, i+2, row)
+			fmt.Printf("Invalid check_in_code %s on line %d, row data is %v\n", row.CheckInCodeWithPrefix, i+2, row)
 			continue
 		}
 		checkInCode := row.CheckInCodeWithPrefix[2:]
 		if err := uuid.Validate(checkInCode); err != nil {
-			fmt.Printf("Invalid check_in_code uuid format %s on line %d, row data is %v (%v)", checkInCode, i+2, row, err)
+			fmt.Printf("Invalid check_in_code uuid format %s on line %d, row data is %v (%v)\n", checkInCode, i+2, row, err)
 			continue
 		}
 
@@ -215,8 +234,19 @@ func transformWorkshopCsv() {
 		case "Department":
 			category = string(models.WorkShopCategoryDepartment)
 		default:
-			fmt.Printf("Invalid workshop category %s on line %d, row data is %v", row.Category, i+2, row)
+			fmt.Printf("Invalid workshop category %s on line %d, row data is %v\n", row.Category, i+2, row)
 			continue
+		}
+
+		imagePath := ""
+		if row.ImageUrl != "" {
+			fileId, found := strings.CutPrefix(row.ImageUrl, "https://drive.google.com/file/d/")
+			if !found {
+				fmt.Printf("Invalid workshop image url %q on line %d\n", row.ImageUrl, i+2)
+				continue
+			}
+			fileId = strings.Split(fileId, "/")[0]
+			imagePath = fmt.Sprintf("/workshop/%s", fileId)
 		}
 
 		newRow := []string{
@@ -229,7 +259,7 @@ func transformWorkshopCsv() {
 			fullEnd,
 			row.Location,
 			row.TotalSeats,
-			row.ImageUrl,
+			imagePath,
 		}
 		writer.Write(newRow)
 	}
