@@ -42,10 +42,12 @@ func seedData(ctx context.Context, db *bun.DB) *SeedData {
 			Description:  "Desc",
 			StartTime:    time.Now(),
 			EndTime:      time.Now().Add(time.Hour),
+			EventDate:    "2026-03-28",
 			BuildingName: utils.Ptr("ENG3"),
 			Floor:        utils.Ptr("4"),
 			RoomName:     utils.Ptr("409"),
 			Image:        nil,
+			Link:         nil,
 		}
 	}
 
