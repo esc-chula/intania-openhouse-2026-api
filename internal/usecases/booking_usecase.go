@@ -50,7 +50,7 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, use
 	if err != nil {
 		return err
 	}
-	if workshop.RegisteredCount >= workshop.TotalSeats {
+	if *workshop.RegisteredCount >= *workshop.TotalSeats {
 		return repositories.ErrWorkshopFull
 	}
 
@@ -64,7 +64,7 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, use
 		return ErrParticipantTypeNotAllowed
 	}
 	// check for club's workshop
-	if workshop.Category == models.WorkShopCategoryClub && user.ParticipantType != models.ParticipantTypeStudent {
+	if *workshop.Category == models.WorkShopCategoryClub && user.ParticipantType != models.ParticipantTypeStudent {
 		return ErrParticipantTypeNotAllowed
 	}
 
@@ -74,10 +74,10 @@ func (u *bookingUsecaseImpl) BookWorkshop(ctx context.Context, userID int64, use
 		return err
 	}
 	// Check for time overlap
-	targetStart := workshop.StartTime
-	targetEnd := workshop.EndTime
+	targetStart := *workshop.StartTime
+	targetEnd := *workshop.EndTime
 	for _, b := range existingBookings {
-		if targetStart.Before(b.EndTime) && targetEnd.After(b.StartTime) && workshop.EventDate == b.EventDate && b.Status == models.StatusConfirmed {
+		if targetStart.Before(b.EndTime) && targetEnd.After(b.StartTime) && *workshop.EventDate == b.EventDate && b.Status == models.StatusConfirmed {
 			return ErrTimeConflict
 		}
 	}

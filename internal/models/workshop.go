@@ -30,6 +30,23 @@ type Workshop struct {
 	CheckInCode     string           `bun:"check_in_code,nullzero"   json:"-"`
 }
 
+type WorkshopOptional struct {
+	bun.BaseModel   `bun:"table:workshops,alias:ws"`
+	ID              *int64            `bun:"id,pk,autoincrement"      json:"id"`
+	Name            *string           `bun:"name"                     json:"name"`
+	Description     *string           `bun:"description"              json:"description"`
+	Category        *WorkShopCategory `bun:"category"                 json:"category"`
+	Affiliation     *string           `bun:"affiliation"              json:"affiliation"`
+	EventDate       *string           `bun:"event_date"               json:"event_date"` // Date in format `2024-12-31`
+	StartTime       *time.Time        `bun:"start_time"               json:"start_time"`
+	EndTime         *time.Time        `bun:"end_time"                 json:"end_time"`
+	Location        *string           `bun:"location"                 json:"location"`
+	TotalSeats      *int              `bun:"total_seats"              json:"total_seats"`
+	RegisteredCount *int              `bun:"registered_count"         json:"registered_count"`
+	Image           *string           `bun:"image"                    json:"image"`
+	CheckInCode     *string           `bun:"check_in_code,nullzero"   json:"-"`
+}
+
 type WorkshopFilter struct {
 	Search    string
 	Category  string

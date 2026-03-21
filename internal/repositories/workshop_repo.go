@@ -16,7 +16,7 @@ var (
 )
 
 type WorkshopRepo interface {
-	GetWorkshopById(ctx context.Context, id int64, fields []string) (*models.Workshop, error)
+	GetWorkshopById(ctx context.Context, id int64, fields []string) (*models.WorkshopOptional, error)
 	ListWorkshop(ctx context.Context, filter models.WorkshopFilter) ([]*models.Workshop, error)
 	IncrementRegisteredCount(ctx context.Context, workshopID int64) error
 	DecrementRegisteredCount(ctx context.Context, workshopID int64) error
@@ -32,8 +32,8 @@ func NewWorkshopRepo(db *bun.DB) WorkshopRepo {
 	}
 }
 
-func (r *workshopRepoImpl) GetWorkshopById(ctx context.Context, id int64, fields []string) (*models.Workshop, error) {
-	workshop := new(models.Workshop)
+func (r *workshopRepoImpl) GetWorkshopById(ctx context.Context, id int64, fields []string) (*models.WorkshopOptional, error) {
+	workshop := new(models.WorkshopOptional)
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
 		query := idb.NewSelect().Model(workshop).Where("id = ?", id)
 		if len(fields) > 0 {
@@ -49,6 +49,7 @@ func (r *workshopRepoImpl) GetWorkshopById(ctx context.Context, id int64, fields
 	}
 	return workshop, nil
 }
+
 func (r *workshopRepoImpl) ListWorkshop(ctx context.Context, filter models.WorkshopFilter) ([]*models.Workshop, error) {
 	workshops := make([]*models.Workshop, 0)
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {

@@ -50,24 +50,24 @@ func InitWorkshopHandler(api huma.API, usecase usecases.WorkshopUsecase, mid mid
 
 type GetWorkshopRequest struct {
 	ID     int64    `path:"id"`
-	Fields []string `query:"fields" explode:"true" enum:"id,name,description,category,affiliation,event_date,start_time,end_time,location,total_seats,registered_count,image"`
+	Fields []string `          query:"fields" explode:"true" enum:"id,name,description,category,affiliation,event_date,start_time,end_time,location,total_seats,registered_count,image"`
 }
 type GetWorkshopResponse struct {
 	Body GetWorkshopResponseBody `json:"body"`
 }
 type GetWorkshopResponseBody struct {
-	ID              int64                   `json:"id,omitempty"`
-	Name            string                  `json:"name,omitempty"`
-	Description     string                  `json:"description,omitempty"`
-	Category        models.WorkShopCategory `json:"category,omitempty"`
-	Affiliation     string                  `json:"affiliation,omitempty"`
-	EventDate       string                  `json:"event_date,omitempty"`
-	StartTime       time.Time               `json:"start_time,omitempty"`
-	EndTime         time.Time               `json:"end_time,omitempty"`
-	Location        string                  `json:"location,omitempty"`
-	TotalSeats      int                     `json:"total_seats,omitempty"`
-	RegisteredCount int                     `json:"registered_count,omitempty"`
-	Image           string          `json:"image,omitempty"`
+	ID              *int64                   `json:"id,omitempty"`
+	Name            *string                  `json:"name,omitempty"`
+	Description     *string                  `json:"description,omitempty"`
+	Category        *models.WorkShopCategory `json:"category,omitempty"`
+	Affiliation     *string                  `json:"affiliation,omitempty"`
+	EventDate       *string                  `json:"event_date,omitempty"`
+	StartTime       *time.Time               `json:"start_time,omitempty"`
+	EndTime         *time.Time               `json:"end_time,omitempty"`
+	Location        *string                  `json:"location,omitempty"`
+	TotalSeats      *int                     `json:"total_seats,omitempty"`
+	RegisteredCount *int                     `json:"registered_count,omitempty"`
+	Image           *string                  `json:"image,omitempty"`
 }
 
 func (h *workshopHandler) GetWorkshop(ctx context.Context, input *GetWorkshopRequest) (*GetWorkshopResponse, error) {
@@ -109,9 +109,9 @@ type ListWorkshopRequest struct {
 	Search    string `query:"search"`
 	Category  string `query:"category"`
 	EventDate string `query:"event_date"`
-	HideFull  bool   `query:"hide_full" default:"false"`
-	SortBy    string `query:"sort_by" enum:"start_time,name" default:"start_time"`
-	Order     string `query:"order" enum:"asc,desc" default:"asc"`
+	HideFull  bool   `query:"hide_full"  default:"false"`
+	SortBy    string `query:"sort_by"    default:"start_time" enum:"start_time,name"`
+	Order     string `query:"order"      default:"asc"        enum:"asc,desc"`
 }
 type ListWorkshopResponse struct {
 	Body ListWorkshopResponseBody `json:"body"`
@@ -131,7 +131,7 @@ type WorkshopItem struct {
 	Location        string                  `json:"location"`
 	TotalSeats      int                     `json:"total_seats"`
 	RegisteredCount int                     `json:"registered_count"`
-	Image           string          `json:"image"`
+	Image           string                  `json:"image"`
 }
 
 func (h *workshopHandler) ListWorkshop(ctx context.Context, input *ListWorkshopRequest) (*ListWorkshopResponse, error) {
