@@ -17,6 +17,7 @@ var (
 
 type WorkshopRepo interface {
 	GetWorkshopById(ctx context.Context, id int64, fields []string) (*models.WorkshopOptional, error)
+	GetWorkshopDetail(ctx context.Context, userId, workshopId int64, fields []string) (*models.WorkshopDetail, error)
 	ListWorkshop(ctx context.Context, filter models.WorkshopFilter) ([]*models.Workshop, error)
 	IncrementRegisteredCount(ctx context.Context, workshopID int64) error
 	DecrementRegisteredCount(ctx context.Context, workshopID int64) error
@@ -39,6 +40,34 @@ func (r *workshopRepoImpl) GetWorkshopById(ctx context.Context, id int64, fields
 		if len(fields) > 0 {
 			query.Column(fields...)
 		}
+		return query.Scan(ctx)
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrWorkshopNotFound
+		}
+		return nil, err
+	}
+	return workshop, nil
+}
+
+func (r *workshopRepoImpl) GetWorkshopDetail(ctx context.Context, userId, workshopId int64, fields []string) (*models.WorkshopDetail, error) {
+	workshop := new(models.WorkshopDetail)
+
+	err := r.exec.Run(ctx, func(idb bun.IDB) error {
+		query := idb.NewSelect().
+			Model(workshop).
+			Join("LEFT JOIN bookings AS bk ON bk.workshop_id = ws.id AND bk.user_id = ?", userId).
+			Where("ws.id = ?", workshopId)
+
+		for _, field := range fields {
+			if field == "is_registered" {
+				query.ColumnExpr("bk.id IS NOT NULL AS is_registered")
+			} else {
+				query.Column(field)
+			}
+		}
+
 		return query.Scan(ctx)
 	})
 	if err != nil {

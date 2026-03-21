@@ -47,6 +47,12 @@ type WorkshopOptional struct {
 	CheckInCode     *string           `bun:"check_in_code,nullzero"   json:"-"`
 }
 
+type WorkshopDetail struct {
+	bun.BaseModel `      bun:"table:workshops,alias:ws"`
+	WorkshopOptional
+	IsRegistered *bool `bun:"is_registered"            json:"is_registered"`
+}
+
 type WorkshopFilter struct {
 	Search    string
 	Category  string

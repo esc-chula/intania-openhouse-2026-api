@@ -87,7 +87,7 @@ func InitServer(cfg config.Config, db *bun.DB) error {
 
 	// Create Usecases
 	userUsecase := usecases.NewUserUsecase(userRepo, stampRepo, transactioner)
-	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo)
+	workshopUsecase := usecases.NewWorkshopUsecase(workshopRepo, userRepo)
 	bookingUsecase := usecases.NewBookingUsecase(bookingRepo, workshopRepo, userRepo, transactioner)
 	checkInUsecase := usecases.NewCheckInUsecase(bookingRepo, boothRepo, userRepo)
 	stampUsecase := usecases.NewStampUsecase(stampRepo, bookingRepo, boothRepo)

@@ -8,24 +8,32 @@ import (
 )
 
 type WorkshopUsecase interface {
-	GetWorkshop(ctx context.Context, id int64, fields []string) (*models.WorkshopOptional, error)
+	GetWorkshop(ctx context.Context, userEmail string, workshopId int64, fields []string) (*models.WorkshopDetail, error)
 	ListWorkshop(ctx context.Context, filter models.WorkshopFilter) ([]*models.Workshop, error)
 }
 
 type workshopUsecaseImpl struct {
-	repo repositories.WorkshopRepo
+	workshopRepo repositories.WorkshopRepo
+	userRepo     repositories.UserRepo
 }
 
-func NewWorkshopUsecase(repo repositories.WorkshopRepo) WorkshopUsecase {
+func NewWorkshopUsecase(workshopRepo repositories.WorkshopRepo, userRepo repositories.UserRepo) WorkshopUsecase {
 	return &workshopUsecaseImpl{
-		repo: repo,
+		workshopRepo: workshopRepo,
+		userRepo:     userRepo,
 	}
 }
 
-func (u *workshopUsecaseImpl) GetWorkshop(ctx context.Context, id int64, fields []string) (*models.WorkshopOptional, error) {
-	return u.repo.GetWorkshopById(ctx, id, fields)
+func (u *workshopUsecaseImpl) GetWorkshop(ctx context.Context, userEmail string, workshopId int64, fields []string) (*models.WorkshopDetail, error) {
+	user, err := u.userRepo.GetUserByEmail(ctx, userEmail, []string{"id"})
+	if err != nil {
+		return nil, err
+	}
+	userId := user.ID
+
+	return u.workshopRepo.GetWorkshopDetail(ctx, userId, workshopId, fields)
 }
 
 func (u *workshopUsecaseImpl) ListWorkshop(ctx context.Context, filter models.WorkshopFilter) ([]*models.Workshop, error) {
-	return u.repo.ListWorkshop(ctx, filter)
+	return u.workshopRepo.ListWorkshop(ctx, filter)
 }
