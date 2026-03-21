@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
@@ -145,14 +146,14 @@ type BookingItem struct {
 }
 
 type BookingWorkshopInfo struct {
-	Name            string `json:"name"`
-	EventDate       string `json:"event_date"`
-	StartTime       string `json:"start_time"`
-	EndTime         string `json:"end_time"`
-	Location        string `json:"location"`
-	Affiliation     string `json:"affiliation"`
-	RegisteredCount int    `json:"registered_count"`
-	TotalSeats      int    `json:"total_seats"`
+	Name            string    `json:"name"`
+	EventDate       string    `json:"event_date"`
+	StartTime       time.Time `json:"start_time"`
+	EndTime         time.Time `json:"end_time"`
+	Location        string    `json:"location"`
+	Affiliation     string    `json:"affiliation"`
+	RegisteredCount int       `json:"registered_count"`
+	TotalSeats      int       `json:"total_seats"`
 }
 
 func (h *bookingHandler) GetMyBookings(ctx context.Context, input *GetMyBookingsRequest) (*GetMyBookingsResponse, error) {
@@ -176,8 +177,8 @@ func (h *bookingHandler) GetMyBookings(ctx context.Context, input *GetMyBookings
 			Workshop: BookingWorkshopInfo{
 				Name:            b.WorkshopName,
 				EventDate:       b.EventDate,
-				StartTime:       b.StartTime.Format("15:04"),
-				EndTime:         b.EndTime.Format("15:04"),
+				StartTime:       b.StartTime,
+				EndTime:         b.EndTime,
 				Location:        b.Location,
 				Affiliation:     b.Affiliation,
 				RegisteredCount: b.RegisteredCount,
