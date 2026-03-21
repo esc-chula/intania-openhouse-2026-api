@@ -1,4 +1,4 @@
-.PHONY: setup migrate-% up up-deps down-deps docker-build docker-run
+.PHONY: setup migrate-% up up-deps down-deps up-normal up-testing down
 
 ENV_FILE := .env.dev
 
@@ -11,6 +11,7 @@ migrate-up:
 migrate-down:
 migrate-reset:
 migrate-create:
+
 seed:
 	go run . --env-file $(ENV_FILE) seed
 
@@ -18,16 +19,16 @@ up:
 	air -c .air.toml
 
 up-deps:
-	docker compose --env-file $(ENV_FILE) up postgres
+	docker compose up postgres
 
 down-deps:
-	docker compose --env-file $(ENV_FILE) down
+	docker compose down
 
-docker-build:
-	docker build --target normal -t intania-openhouse-2026-api -f Dockerfile .
-
-docker-run: docker-build
-	docker run --env-file $(ENV_FILE) intania-openhouse-2026-api
+up-normal:
+	docker compose up postgres backend -d
 
 up-testing:
-	docker compose --env-file $(ENV_FILE) up postgres backend-testing -d
+	docker compose up postgres backend-testing -d
+
+down:
+	docker compose down

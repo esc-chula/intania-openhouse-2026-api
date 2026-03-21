@@ -19,10 +19,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/extra/bundebug"
 )
 
-func InitServer(cfg config.Config) error {
+func InitServer(cfg config.Config, db *bun.DB) error {
 	router := chi.NewMux()
 	humaCfg := huma.DefaultConfig("intania-openhouse-2026", "1.0.0")
 
@@ -62,7 +63,9 @@ func InitServer(cfg config.Config) error {
 	defer cancel()
 
 	// Init Database
-	db := database.NewPostgresDB(cfg.Database())
+	if db == nil {
+		db = database.NewPostgresDB(cfg.Database())
+	}
 	db.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithVerbose(!cfg.App().IsProduction),
 	))
