@@ -11,9 +11,9 @@ import (
 	"github.com/uptrace/bun"
 )
 
-var (
-	ErrActivityNotFound = errors.New("activity not found")
-)
+var ErrActivityNotFound = errors.New("activity not found")
+var loc, _ = time.LoadLocation("Asia/Bangkok")
+var now = time.Now().In(loc)
 
 type ActivityRepo interface {
 	GetActivityByID(ctx context.Context, id int64) (*models.Activity, error)
@@ -60,11 +60,10 @@ func (r *activityRepoImpl) ListActivities(ctx context.Context, filter models.Act
 		}
 
 		if filter.HidePast {
-			query.Where("end_time >= ?", time.Now())
+			query.Where("end_time >= ?", now)
 		}
 
 		if filter.HappeningNow {
-			now := time.Now()
 			query.Where("start_time <= ? AND end_time >= ?", now, now)
 		}
 

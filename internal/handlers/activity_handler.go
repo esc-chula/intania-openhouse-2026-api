@@ -13,6 +13,8 @@ import (
 )
 
 var ErrActivityNotFound = huma.Error404NotFound("activity not found")
+var loc, _ = time.LoadLocation("Asia/Bangkok")
+var now = time.Now().In(loc)
 
 type activityHandler struct {
 	api     huma.API
@@ -89,7 +91,6 @@ func (h *activityHandler) ListActivities(ctx context.Context, input *ListActivit
 		return nil, ErrInternalServerError(err)
 	}
 
-	now := time.Now()
 	items := make([]ActivityItem, 0, len(activities))
 	for _, a := range activities {
 		isHappening, err := getIsHappening(now, a.EventDate, a.StartTime, a.EndTime)
@@ -137,7 +138,6 @@ func (h *activityHandler) GetActivity(ctx context.Context, input *GetActivityReq
 		return nil, ErrInternalServerError(err)
 	}
 
-	now := time.Now()
 	isHappening, err := getIsHappening(now, activity.EventDate, activity.StartTime, activity.EndTime)
 	if err != nil {
 		return nil, ErrInternalServerError()
