@@ -11,9 +11,7 @@ import (
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/usecases"
 )
 
-var (
-	ErrActivityNotFound = huma.Error404NotFound("activity not found")
-)
+var ErrActivityNotFound = huma.Error404NotFound("activity not found")
 
 type activityHandler struct {
 	api     huma.API
@@ -46,11 +44,11 @@ func InitActivityHandler(api huma.API, usecase usecases.ActivityUsecase, mid mid
 }
 
 type ListActivitiesRequest struct {
-	Search       string `query:"search" doc:"Search by title, description, or location"`
-	HidePast     bool   `query:"hide_past" doc:"Exclude activities that have already ended" default:"false"`
+	Search       string `query:"search"        doc:"Search by title, description, or location"`
+	HidePast     bool   `query:"hide_past"     doc:"Exclude activities that have already ended"    default:"false"`
 	HappeningNow bool   `query:"happening_now" doc:"Include only activities currently in progress" default:"false"`
-	SortBy       string `query:"sort_by" enum:"start_time,title,location" default:"start_time" doc:"Sort results by field"`
-	Order        string `query:"order" enum:"asc,desc" default:"asc" doc:"Sort order"`
+	SortBy       string `query:"sort_by"       doc:"Sort results by field"                         default:"start_time" enum:"start_time,title,location"`
+	Order        string `query:"order"         doc:"Sort order"                                    default:"asc"        enum:"asc,desc"`
 }
 
 type ListActivitiesResponse struct {
@@ -64,16 +62,16 @@ type ListActivitiesResponseBody struct {
 type ActivityItem struct {
 	ID           int64     `json:"id"`
 	Title        string    `json:"title"`
+	Description  string    `json:"description"`
 	StartTime    time.Time `json:"start_time"`
 	EndTime      time.Time `json:"end_time"`
 	EventDate    string    `json:"event_date"`
-	BuildingName string    `json:"building_name,omitempty"`
-	Floor        string    `json:"floor,omitempty"`
-	RoomName     string    `json:"room_name,omitempty"`
-	Description  string    `json:"description"`
-	Image        string    `json:"image,omitempty"`
+	BuildingName *string   `json:"building_name"`
+	Floor        *string   `json:"floor"`
+	RoomName     *string   `json:"room_name"`
+	Image        *string   `json:"image"`
+	Link         *string   `json:"link"`
 	IsHappening  bool      `json:"is_happening"`
-	Link         string    `json:"link,omitempty"`
 }
 
 func (h *activityHandler) ListActivities(ctx context.Context, input *ListActivitiesRequest) (*ListActivitiesResponse, error) {

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
+	"github.com/esc-chula/intania-openhouse-2026-api/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
@@ -41,10 +42,10 @@ func seedData(ctx context.Context, db *bun.DB) *SeedData {
 			Description:  "Desc",
 			StartTime:    time.Now(),
 			EndTime:      time.Now().Add(time.Hour),
-			BuildingName: "ENG3",
-			Floor:        "4",
-			RoomName:     "409",
-			Image:        "",
+			BuildingName: utils.Ptr("ENG3"),
+			Floor:        utils.Ptr("4"),
+			RoomName:     utils.Ptr("409"),
+			Image:        nil,
 		}
 	}
 

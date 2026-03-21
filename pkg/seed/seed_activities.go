@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
+	"github.com/esc-chula/intania-openhouse-2026-api/pkg/utils"
 )
 
 func GetActivitySeedData() []models.Activity {
@@ -13,36 +14,36 @@ func GetActivitySeedData() []models.Activity {
 			Description:  "Join us for the grand opening of Intania Openhouse 2026.",
 			StartTime:    time.Date(1, 1, 1, 9, 0, 0, 0, time.UTC),
 			EndTime:      time.Date(1, 1, 1, 10, 0, 0, 0, time.UTC),
-			BuildingName: "Engineering Building 3",
-			Floor:        "1",
-			RoomName:     "Hall of Intania",
-			Image:        "https://example.com/opening.jpg",
+			BuildingName: utils.Ptr("Engineering Building 3"),
+			Floor:        utils.Ptr("1"),
+			RoomName:     utils.Ptr("Hall of Intania"),
+			Image:        utils.Ptr("https://example.com/opening.jpg"),
 			EventDate:    "2026-03-28",
-			Link:         "https://example.com/events/opening-ceremony",
+			Link:         utils.Ptr("https://example.com/events/opening-ceremony"),
 		},
 		{
 			Title:        "Robotics Workshop",
 			Description:  "Learn how to build and program your first robot.",
 			StartTime:    time.Date(1, 1, 1, 13, 0, 0, 0, time.UTC),
 			EndTime:      time.Date(1, 1, 1, 15, 0, 0, 0, time.UTC),
-			BuildingName: "Engineering Building 4",
-			Floor:        "G",
-			RoomName:     "Robotics Lab",
-			Image:        "https://example.com/robotics.jpg",
+			BuildingName: utils.Ptr("Engineering Building 4"),
+			Floor:        utils.Ptr("G"),
+			RoomName:     utils.Ptr("Robotics Lab"),
+			Image:        utils.Ptr("https://example.com/robotics.jpg"),
 			EventDate:    "2026-03-28",
-			Link:         "https://example.com/events/robotics-workshop",
+			Link:         utils.Ptr("https://example.com/events/robotics-workshop"),
 		},
 		{
 			Title:        "Engineering Fair",
 			Description:  "Explore projects and innovations from various departments.",
 			StartTime:    time.Date(1, 1, 1, 10, 30, 0, 0, time.UTC),
 			EndTime:      time.Date(1, 1, 1, 16, 0, 0, 0, time.UTC),
-			BuildingName: "Engineering Library",
-			Floor:        "1-2",
-			RoomName:     "Main Hall",
-			Image:        "https://example.com/fair.jpg",
+			BuildingName: utils.Ptr("Engineering Library"),
+			Floor:        utils.Ptr("1-2"),
+			RoomName:     utils.Ptr("Main Hall"),
+			Image:        utils.Ptr("https://example.com/fair.jpg"),
 			EventDate:    "2026-03-28",
-			Link:         "https://example.com/events/engineering-fair",
+			Link:         utils.Ptr("https://example.com/events/engineering-fair"),
 		},
 		// Past Event
 		{
@@ -50,12 +51,12 @@ func GetActivitySeedData() []models.Activity {
 			Description:  "Preparation for the volunteers of Openhouse 2026.",
 			StartTime:    time.Date(1, 1, 1, 9, 0, 0, 0, time.UTC),
 			EndTime:      time.Date(1, 1, 1, 12, 0, 0, 0, time.UTC),
-			BuildingName: "Engineering Building 3",
-			Floor:        "1",
-			RoomName:     "Hall of Intania",
-			Image:        "https://example.com/orientation.jpg",
+			BuildingName: utils.Ptr("Engineering Building 3"),
+			Floor:        utils.Ptr("1"),
+			RoomName:     utils.Ptr("Hall of Intania"),
+			Image:        utils.Ptr("https://example.com/orientation.jpg"),
 			EventDate:    "2026-02-01",
-			Link:         "https://example.com/events/volunteer-orientation",
+			Link:         utils.Ptr("https://example.com/events/volunteer-orientation"),
 		},
 		// Happening Now
 		{
@@ -63,12 +64,12 @@ func GetActivitySeedData() []models.Activity {
 			Description:  "Setting up the equipment for the overnight hackathon.",
 			StartTime:    time.Date(1, 1, 1, 22, 0, 0, 0, time.UTC),
 			EndTime:      time.Date(1, 1, 1, 23, 59, 0, 0, time.UTC),
-			BuildingName: "Engineering Building 100",
-			Floor:        "3",
-			RoomName:     "Tech Hub",
-			Image:        "https://example.com/setup.jpg",
+			BuildingName: utils.Ptr("Engineering Building 100"),
+			Floor:        utils.Ptr("3"),
+			RoomName:     utils.Ptr("Tech Hub"),
+			Image:        utils.Ptr("https://example.com/setup.jpg"),
 			EventDate:    "2026-03-04",
-			Link:         "https://example.com/events/hackathon-setup",
+			Link:         utils.Ptr("https://example.com/events/hackathon-setup"),
 		},
 		// Future Event
 		{
@@ -76,12 +77,12 @@ func GetActivitySeedData() []models.Activity {
 			Description:  "Checking all physical assets before the big day.",
 			StartTime:    time.Date(1, 1, 1, 14, 0, 0, 0, time.UTC),
 			EndTime:      time.Date(1, 1, 1, 16, 0, 0, 0, time.UTC),
-			BuildingName: "Engineering Building 4",
-			Floor:        "G",
-			RoomName:     "Storage Site X",
-			Image:        "https://example.com/inspection.jpg",
+			BuildingName: utils.Ptr("Engineering Building 4"),
+			Floor:        utils.Ptr("G"),
+			RoomName:     utils.Ptr("Storage Site X"),
+			Image:        utils.Ptr("https://example.com/inspection.jpg"),
 			EventDate:    "2026-04-15",
-			Link:         "https://example.com/events/props-inspection",
+			Link:         utils.Ptr("https://example.com/events/props-inspection"),
 		},
 	}
 }
