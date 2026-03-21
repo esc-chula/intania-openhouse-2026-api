@@ -4,16 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
+	"fmt"
 
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/models"
 	"github.com/esc-chula/intania-openhouse-2026-api/pkg/baserepo"
 	"github.com/uptrace/bun"
 )
 
-var (
-	ErrActivityNotFound = errors.New("activity not found")
-)
+var ErrActivityNotFound = errors.New("activity not found")
 
 type ActivityRepo interface {
 	GetActivityByID(ctx context.Context, id int64) (*models.Activity, error)
@@ -59,26 +57,32 @@ func (r *activityRepoImpl) ListActivities(ctx context.Context, filter models.Act
 			)
 		}
 
+		currentDate := "(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok')::date"
+		currentTime := "(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok')::time"
+
 		if filter.HidePast {
-			query.Where("end_time >= ?", time.Now())
+			query.WhereGroup(" AND ", func(q *bun.SelectQuery) *bun.SelectQuery {
+				return q.Where(fmt.Sprintf("event_date > %s", currentDate)).
+					WhereOr(fmt.Sprintf("event_date = %s AND end_time >= %s", currentDate, currentTime))
+			})
 		}
 
 		if filter.HappeningNow {
-			now := time.Now()
-			query.Where("start_time <= ? AND end_time >= ?", now, now)
+			query.Where(fmt.Sprintf("event_date = %s", currentDate)).
+				Where(fmt.Sprintf("start_time <= %s", currentTime)).
+				Where(fmt.Sprintf("end_time >= %s", currentTime))
 		}
 
 		if filter.SortBy != "" {
 			if filter.SortBy == "location" {
-				query.Order("building_name " + filter.Order).Order("room_name " + filter.Order)
+				query.OrderExpr("building_name ?, room_name ?", bun.Safe(filter.Order), bun.Safe(filter.Order))
 			} else {
-				query.Order(filter.SortBy + " " + filter.Order)
+				query.OrderExpr("? ?", bun.Ident(filter.SortBy), bun.Safe(filter.Order))
 			}
 		}
 
 		return query.Scan(ctx)
 	})
-
 	if err != nil {
 		return nil, err
 	}
