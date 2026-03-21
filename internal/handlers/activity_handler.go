@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -91,6 +92,11 @@ func (h *activityHandler) ListActivities(ctx context.Context, input *ListActivit
 	now := time.Now()
 	items := make([]ActivityItem, 0, len(activities))
 	for _, a := range activities {
+		isHappening, err := getIsHappening(now, a.EventDate, a.StartTime, a.EndTime)
+		if err != nil {
+			return nil, ErrInternalServerError()
+		}
+
 		items = append(items, ActivityItem{
 			ID:           a.ID,
 			Title:        a.Title,
@@ -102,7 +108,7 @@ func (h *activityHandler) ListActivities(ctx context.Context, input *ListActivit
 			RoomName:     a.RoomName,
 			Description:  a.Description,
 			Image:        a.Image,
-			IsHappening:  now.After(a.StartTime) && now.Before(a.EndTime),
+			IsHappening:  isHappening,
 			Link:         a.Link,
 		})
 	}
@@ -132,6 +138,11 @@ func (h *activityHandler) GetActivity(ctx context.Context, input *GetActivityReq
 	}
 
 	now := time.Now()
+	isHappening, err := getIsHappening(now, activity.EventDate, activity.StartTime, activity.EndTime)
+	if err != nil {
+		return nil, ErrInternalServerError()
+	}
+
 	return &GetActivityResponse{
 		Body: ActivityItem{
 			ID:           activity.ID,
@@ -144,8 +155,21 @@ func (h *activityHandler) GetActivity(ctx context.Context, input *GetActivityReq
 			RoomName:     activity.RoomName,
 			Description:  activity.Description,
 			Image:        activity.Image,
-			IsHappening:  now.After(activity.StartTime) && now.Before(activity.EndTime),
+			IsHappening:  isHappening,
 			Link:         activity.Link,
 		},
 	}, nil
+}
+
+func getIsHappening(now time.Time, eventDate string, startTime time.Time, endTime time.Time) (bool, error) {
+	datePart, err := time.Parse(time.RFC3339, eventDate)
+	if err != nil {
+		return false, fmt.Errorf("invalid event date: %w", err)
+	}
+
+	y, m, d := datePart.Date()
+
+	fullStartTime := time.Date(y, m, d, startTime.Hour(), startTime.Minute(), startTime.Second(), startTime.Nanosecond(), now.Location())
+	fullEndTime := time.Date(y, m, d, endTime.Hour(), endTime.Minute(), endTime.Second(), endTime.Nanosecond(), now.Location())
+	return now.After(fullStartTime) && now.Before(fullEndTime), nil
 }
