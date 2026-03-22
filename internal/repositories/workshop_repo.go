@@ -57,7 +57,7 @@ func (r *workshopRepoImpl) GetWorkshopDetail(ctx context.Context, userId, worksh
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
 		query := idb.NewSelect().
 			Model(workshop).
-			Join("LEFT JOIN bookings AS bk ON bk.workshop_id = ws.id AND bk.user_id = ?", userId).
+			Join("LEFT JOIN bookings AS bk ON bk.workshop_id = ws.id AND bk.user_id = ? AND bk.status = 'Confirmed'", userId).
 			Where("ws.id = ?", workshopId)
 
 		for _, field := range fields {
