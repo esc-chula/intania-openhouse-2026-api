@@ -25,7 +25,7 @@ type BookingRepo interface {
 	GetUserBookings(ctx context.Context, userID int64) ([]models.BookingWithWorkshop, error)
 	CancelBooking(ctx context.Context, userID int64, workshopID int64) error
 	UpdateBookingStatus(ctx context.Context, bookingID int64, status models.Status) error
-	GetBookingIDAndStatus(ctx context.Context, email string, checkInCode string) (int64, models.Status, error)
+	GetBookingData(ctx context.Context, email string, checkInCode string) (models.BookingData, error)
 	AttendBooking(ctx context.Context, bookingID int64) error
 	GetAttendedWorkshopsForUser(ctx context.Context, userID int64) ([]models.StampItem, error)
 }
@@ -143,16 +143,21 @@ func (r *bookingRepoImpl) AttendBooking(ctx context.Context, bookingID int64) er
 	})
 }
 
-func (r *bookingRepoImpl) GetBookingIDAndStatus(ctx context.Context, email string, checkInCode string) (int64, models.Status, error) {
-	var booking models.Booking
+func (r *bookingRepoImpl) GetBookingData(ctx context.Context, email string, checkInCode string) (models.BookingData, error) {
+	var booking models.BookingData
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
 		err := idb.NewSelect().
-			Model((*models.Booking)(nil)).
-			ColumnExpr("bk.id, bk.status").
+			TableExpr("bookings AS bk").
+			ColumnExpr("bk.id").
+			ColumnExpr("bk.status").
+			ColumnExpr("bk.workshop_id").
+			ColumnExpr("ws.name AS workshop_name").
+			ColumnExpr("ws.category AS workshop_category").
 			Join("JOIN users AS u ON u.id = bk.user_id").
 			Join("JOIN workshops AS ws ON ws.id = bk.workshop_id").
 			Where("u.email = ?", email).
 			Where("ws.check_in_code = ?", checkInCode).
+			Where("bk.status IN (?)", bun.In([]models.Status{models.StatusConfirmed, models.StatusAttended, models.StatusAbsent})).
 			Scan(ctx, &booking)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -164,7 +169,7 @@ func (r *bookingRepoImpl) GetBookingIDAndStatus(ctx context.Context, email strin
 		return nil
 	})
 
-	return booking.ID, booking.Status, err
+	return booking, err
 }
 
 func (r *bookingRepoImpl) GetAttendedWorkshopsForUser(ctx context.Context, userID int64) ([]models.StampItem, error) {

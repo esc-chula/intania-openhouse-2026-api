@@ -57,12 +57,18 @@ func (r *workshopRepoImpl) GetWorkshopDetail(ctx context.Context, userId, worksh
 	err := r.exec.Run(ctx, func(idb bun.IDB) error {
 		query := idb.NewSelect().
 			Model(workshop).
-			Join("LEFT JOIN bookings AS bk ON bk.workshop_id = ws.id AND bk.user_id = ? AND bk.status = 'Confirmed'", userId).
+			Join(
+				"LEFT JOIN bookings AS bk ON bk.workshop_id = ws.id AND bk.user_id = ? AND bk.status IN (?)",
+				userId,
+				bun.In([]models.Status{models.StatusConfirmed, models.StatusAttended, models.StatusAbsent}),
+			).
 			Where("ws.id = ?", workshopId)
 
 		for _, field := range fields {
 			if field == "is_registered" {
 				query.ColumnExpr("bk.id IS NOT NULL AS is_registered")
+			} else if field == "status" {
+				query.ColumnExpr("bk.status AS status")
 			} else {
 				query.Column(field)
 			}

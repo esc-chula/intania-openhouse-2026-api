@@ -48,9 +48,10 @@ type WorkshopOptional struct {
 }
 
 type WorkshopDetail struct {
-	bun.BaseModel `      bun:"table:workshops,alias:ws"`
+	bun.BaseModel `        bun:"table:workshops,alias:ws"`
 	WorkshopOptional
-	IsRegistered *bool `bun:"is_registered"            json:"is_registered"`
+	IsRegistered *bool   `bun:"is_registered"            json:"is_registered"`
+	Status       *Status `bun:"status"                   json:"status"`
 }
 
 type WorkshopFilter struct {
@@ -96,4 +97,13 @@ type BookingWithWorkshop struct {
 	Affiliation     string     `bun:"affiliation"      json:"affiliation"`
 	RegisteredCount int        `bun:"registered_count" json:"registered_count"`
 	TotalSeats      int        `bun:"total_seats"      json:"total_seats"`
+}
+
+type BookingData struct {
+	bun.BaseModel    `                 bun:"table:bookings,alias:bk"`
+	ID               int64            `bun:"id,pk,autoincrement"`
+	Status           Status           `bun:"status"`
+	WorkshopID       int64            `bun:"workshop_id"`
+	WorkshopName     string           `bun:"workshop_name"`
+	WorkshopCategory WorkShopCategory `bun:"workshop_category"`
 }

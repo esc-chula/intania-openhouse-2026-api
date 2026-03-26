@@ -35,7 +35,7 @@ func InitCheckInHandler(
 		errDoc, errCodes := buildErrorsDocumentation(checkInErrorList)
 
 		o.Summary = "Check-in with code"
-		o.Description = "The code should be formatted in `<type>-<uuid>` where `<type>` is `B` for booth, and `<uuid>` is the identifier for the booth"
+		o.Description = "The code should be formatted in `<type>-<uuid>` where `<type>` is either `W` for workshop or `B` for booth, and `<uuid>` is the identifier for workshop and booth"
 		o.Description += errDoc
 		o.DefaultStatus = 201
 		o.Tags = []string{checkInTag}
@@ -54,6 +54,7 @@ type CheckInResponse struct {
 }
 
 type CheckInResponseBody struct {
+	Type     string               `json:"type"     enum:"workshop,booth"`
 	ID       int64                `json:"id"`
 	Name     string               `json:"name"`
 	Category models.BoothCategory `json:"category" enum:"department,club,exhibition"`
@@ -67,17 +68,28 @@ func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*C
 		return nil, ErrEmailNotFound
 	}
 
-	booth, err := h.checkInUsecase.CheckInBooth(ctx, email, input.Body.Code)
+	result, err := h.checkInUsecase.CheckIn(ctx, email, input.Body.Code)
 	if err != nil {
 		switch err {
 		case usecases.ErrInvalidCodeFormat:
 			return nil, ErrInvalidCode
+
+		// case workshop check-in
+		case repositories.ErrInvalidCheckInCode:
+			return nil, ErrInvalidCode
+		case usecases.ErrAlreadyAttended:
+			return nil, ErrAlreadyCheckedIn
+		case repositories.ErrInvalidBookingStatus:
+			return nil, ErrInvalidCode
+
+		// case booth check-in
 		case repositories.ErrUserNotFound:
 			return nil, ErrUserNotFound
 		case repositories.ErrBoothNotFound:
 			return nil, ErrInvalidCode
 		case repositories.ErrAlreadyCheckedInBooth:
 			return nil, ErrAlreadyCheckedIn
+
 		default:
 			return nil, ErrInternalServerError(err)
 		}
@@ -85,9 +97,10 @@ func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*C
 
 	return &CheckInResponse{
 		Body: CheckInResponseBody{
-			ID:       booth.ID,
-			Name:     booth.Name,
-			Category: booth.Category,
+			Type:     result.Type,
+			ID:       result.ID,
+			Name:     result.Name,
+			Category: result.Category,
 		},
 	}, nil
 }
