@@ -130,6 +130,7 @@ func (r *bookingRepoImpl) AttendBooking(ctx context.Context, bookingID int64) er
 			Set("checked_in_at = ?", time.Now()).
 			Where("id = ?", bookingID).
 			Where("status = ?", models.StatusConfirmed). // race safe
+			Where("(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok') <= (SELECT ws.event_date + ws.end_time FROM workshops ws WHERE ws.id = bk.workshop_id)").
 			Exec(ctx)
 		if err != nil {
 			return err

@@ -68,7 +68,13 @@ func (r *workshopRepoImpl) GetWorkshopDetail(ctx context.Context, userId, worksh
 			if field == "is_registered" {
 				query.ColumnExpr("bk.id IS NOT NULL AS is_registered")
 			} else if field == "status" {
-				query.ColumnExpr("bk.status AS status")
+				query.ColumnExpr(`
+					CASE
+						WHEN bk.status = ? AND (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Bangkok') > (ws.event_date + ws.end_time) THEN ?
+						ELSE bk.status
+					END AS status`,
+					models.StatusConfirmed, models.StatusAbsent,
+				)
 			} else {
 				query.Column(field)
 			}
