@@ -68,7 +68,7 @@ type GetWorkshopResponseBody struct {
 	RegisteredCount *int                     `json:"registered_count,omitempty"`
 	Image           *string                  `json:"image,omitempty"`
 	IsRegistered    *bool                    `json:"is_registered,omitempty"`
-	Status          *models.Status           `json:"status,omitempty"           enum:"Confirmed,Attended,Absent"`
+	Status          *models.Status           `json:"status,omitempty"           enum:"Confirmed,Attended"`
 }
 
 func (h *workshopHandler) GetWorkshop(ctx context.Context, input *GetWorkshopRequest) (*GetWorkshopResponse, error) {
