@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/esc-chula/intania-openhouse-2026-api/internal/middlewares"
@@ -11,7 +12,10 @@ import (
 )
 
 var (
-	ErrInvalidCode      = huma.Error400BadRequest("invalid code")
+	ErrInvalidCode   = huma.Error400BadRequest("invalid code")
+	ErrInvalidCodeFn = func(code string) huma.StatusError {
+		return huma.Error400BadRequest(fmt.Sprintf("invalid code %s", code))
+	}
 	ErrAlreadyCheckedIn = huma.Error400BadRequest("already checked in")
 )
 
@@ -72,21 +76,21 @@ func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*C
 	if err != nil {
 		switch err {
 		case usecases.ErrInvalidCodeFormat:
-			return nil, ErrInvalidCode
+			return nil, ErrInvalidCodeFn(input.Body.Code)
 
 		// case workshop check-in
 		case repositories.ErrInvalidCheckInCode:
-			return nil, ErrInvalidCode
+			return nil, ErrInvalidCodeFn(input.Body.Code)
 		case usecases.ErrAlreadyAttended:
 			return nil, ErrAlreadyCheckedIn
 		case repositories.ErrInvalidBookingStatus:
-			return nil, ErrInvalidCode
+			return nil, ErrInvalidCodeFn(input.Body.Code)
 
 		// case booth check-in
 		case repositories.ErrUserNotFound:
 			return nil, ErrUserNotFound
 		case repositories.ErrBoothNotFound:
-			return nil, ErrInvalidCode
+			return nil, ErrInvalidCodeFn(input.Body.Code)
 		case repositories.ErrAlreadyCheckedInBooth:
 			return nil, ErrAlreadyCheckedIn
 
