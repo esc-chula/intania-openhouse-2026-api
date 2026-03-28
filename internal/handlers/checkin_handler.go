@@ -76,15 +76,15 @@ func (h *checkInHandler) CheckIn(ctx context.Context, input *CheckInRequest) (*C
 	if err != nil {
 		switch err {
 		case usecases.ErrInvalidCodeFormat:
-			return nil, ErrInvalidCodeFn(input.Body.Code)
+			return nil, ErrInvalidCodeFn(input.Body.Code + " (invalid code format)")
 
 		// case workshop check-in
 		case repositories.ErrInvalidCheckInCode:
-			return nil, ErrInvalidCodeFn(input.Body.Code)
+			return nil, ErrInvalidCodeFn(input.Body.Code + " (invalid check in code)")
 		case usecases.ErrAlreadyAttended:
 			return nil, ErrAlreadyCheckedIn
 		case repositories.ErrInvalidBookingStatus:
-			return nil, ErrInvalidCodeFn(input.Body.Code)
+			return nil, ErrInvalidCodeFn(input.Body.Code + " (invalid booking status)")
 
 		// case booth check-in
 		case repositories.ErrUserNotFound:
